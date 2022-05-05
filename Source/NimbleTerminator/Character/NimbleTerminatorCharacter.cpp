@@ -37,5 +37,30 @@ void ANimbleTerminatorCharacter::Tick(float DeltaTime)
 void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	check(PlayerInputComponent);
+
+	PlayerInputComponent->BindAxis("MoveForward", this, &ThisClass::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ThisClass::MoveRight);
 }
 
+void ANimbleTerminatorCharacter::MoveForward(float Value)
+{
+	if (Controller == nullptr || Value == 0.f) return;
+	
+	const FRotator Rotation{ Controller->GetControlRotation() };
+	const FRotator YawRotation{ 0.f, Rotation.Yaw, 0.f };
+	const FVector Direction{ FRotationMatrix{ YawRotation }.GetUnitAxis(EAxis::X) };
+	
+	AddMovementInput(Direction, Value);
+}
+
+void ANimbleTerminatorCharacter::MoveRight(float Value)
+{
+	if (Controller == nullptr || Value == 0.f) return;
+
+	const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
+	const FVector Direction(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y));
+
+	AddMovementInput(Direction, Value);
+}

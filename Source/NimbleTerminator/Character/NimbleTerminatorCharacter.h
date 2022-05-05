@@ -18,6 +18,8 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+	void MoveForward(float Value);
+	void MoveRight(float Value);
 
 private:
 	// Camera boom positioning the camera behind the Character 
