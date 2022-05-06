@@ -131,6 +131,11 @@ void ANimbleTerminatorCharacter::FireWeapon()
 			{
 				DrawDebugLine(World, Start, End, FColor::Red, false, 5.f);
 				DrawDebugPoint(World, FireHit.Location, 5.f, FColor::Red, false, 5.f);
+
+				if (ImpactParticles)
+				{
+					UGameplayStatics::SpawnEmitterAtLocation(World, ImpactParticles, FireHit.ImpactPoint);
+				}
 			}
 			else
 			{
