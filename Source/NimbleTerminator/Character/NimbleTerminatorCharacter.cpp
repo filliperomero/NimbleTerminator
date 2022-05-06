@@ -4,6 +4,7 @@
 #include "NimbleTerminatorCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
 ANimbleTerminatorCharacter::ANimbleTerminatorCharacter() :
@@ -16,14 +17,23 @@ ANimbleTerminatorCharacter::ANimbleTerminatorCharacter() :
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 300.f;
-	// Rotate the arm based on the controller
-	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create a Follow Camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	// FollowCamera does not rotate relative to arm
-	FollowCamera->bUsePawnControlRotation = false;
+	FollowCamera->bUsePawnControlRotation = false; // FollowCamera does not rotate relative to arm
+
+	// Don't rotate when the controller rotates. Let the controller only affect the camera.
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
+
+	// Configure character movement
+	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f); // ... at this rotation rate
+	GetCharacterMovement()->JumpZVelocity = 600.f;
+	GetCharacterMovement()->AirControl = 0.2f;
 }
 
 void ANimbleTerminatorCharacter::BeginPlay()
