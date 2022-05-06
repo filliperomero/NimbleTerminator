@@ -100,8 +100,6 @@ void ANimbleTerminatorCharacter::LookUpAtRate(float Rate)
 
 void ANimbleTerminatorCharacter::FireWeapon()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Fire"));
-
 	if (FireSound)
 	{
 		UGameplayStatics::PlaySound2D(this, FireSound);
@@ -116,5 +114,13 @@ void ANimbleTerminatorCharacter::FireWeapon()
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
 		}
+	}
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && HipFireMontage)
+	{
+		AnimInstance->Montage_Play(HipFireMontage);
+		AnimInstance->Montage_JumpToSection(FName("StartFire"));
 	}
 }
