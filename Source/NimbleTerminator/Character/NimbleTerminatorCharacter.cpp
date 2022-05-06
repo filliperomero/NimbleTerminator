@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 
 ANimbleTerminatorCharacter::ANimbleTerminatorCharacter() :
@@ -124,6 +125,8 @@ void ANimbleTerminatorCharacter::FireWeapon()
 			const FQuat Rotation{ SocketTransform.GetRotation() };
 			const FVector RotationAxis{ Rotation.GetAxisX() };
 			const FVector End{ Start + RotationAxis * TRACE_LENGTH };
+
+			FVector BeamEndPoint{ End };
 			
 			World->LineTraceSingleByChannel(FireHit, Start, End, ECollisionChannel::ECC_Visibility);
 
@@ -132,6 +135,8 @@ void ANimbleTerminatorCharacter::FireWeapon()
 				DrawDebugLine(World, Start, End, FColor::Red, false, 5.f);
 				DrawDebugPoint(World, FireHit.Location, 5.f, FColor::Red, false, 5.f);
 
+				BeamEndPoint = FireHit.ImpactPoint;
+
 				if (ImpactParticles)
 				{
 					UGameplayStatics::SpawnEmitterAtLocation(World, ImpactParticles, FireHit.ImpactPoint);
@@ -139,9 +144,18 @@ void ANimbleTerminatorCharacter::FireWeapon()
 			}
 			else
 			{
-				FireHit.ImpactPoint = End;
+				FireHit.ImpactPoint = BeamEndPoint;
 			}
-			
+
+			if (BeamParticles)
+			{
+				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(World, BeamParticles, SocketTransform);
+
+				if (Beam)
+				{
+					Beam->SetVectorParameter(FName("Target"), BeamEndPoint);
+				}
+			}
 		}
 	}
 
