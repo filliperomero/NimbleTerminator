@@ -110,9 +110,33 @@ void ANimbleTerminatorCharacter::FireWeapon()
 	if (BarrelSocket)
 	{
 		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
-		if (MuzzleFlash)
+
+		UWorld* World = GetWorld();
+		if (World)
 		{
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
+			if (MuzzleFlash)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(World, MuzzleFlash, SocketTransform);
+			}
+
+			FHitResult FireHit;
+			const FVector Start{ SocketTransform.GetLocation() };
+			const FQuat Rotation{ SocketTransform.GetRotation() };
+			const FVector RotationAxis{ Rotation.GetAxisX() };
+			const FVector End{ Start + RotationAxis * TRACE_LENGTH };
+			
+			World->LineTraceSingleByChannel(FireHit, Start, End, ECollisionChannel::ECC_Visibility);
+
+			if (FireHit.bBlockingHit)
+			{
+				DrawDebugLine(World, Start, End, FColor::Red, false, 5.f);
+				DrawDebugPoint(World, FireHit.Location, 5.f, FColor::Red, false, 5.f);
+			}
+			else
+			{
+				FireHit.ImpactPoint = End;
+			}
+			
 		}
 	}
 

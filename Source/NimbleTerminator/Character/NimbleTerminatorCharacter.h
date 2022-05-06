@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "NimbleTerminatorCharacter.generated.h"
 
+#define TRACE_LENGTH 80'000.f
+
 UCLASS()
 class NIMBLETERMINATOR_API ANimbleTerminatorCharacter : public ACharacter
 {
