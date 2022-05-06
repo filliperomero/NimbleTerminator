@@ -6,7 +6,9 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
-ANimbleTerminatorCharacter::ANimbleTerminatorCharacter()
+ANimbleTerminatorCharacter::ANimbleTerminatorCharacter() :
+	BaseTurnRate(45.f),
+	BaseLookUpRate(45.f)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -42,6 +44,13 @@ void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* Play
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ThisClass::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ThisClass::MoveRight);
+	PlayerInputComponent->BindAxis("TurnRate", this, &ThisClass::TurnAtRate);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &ThisClass::LookUpAtRate);
+	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 }
 
 void ANimbleTerminatorCharacter::MoveForward(float Value)
@@ -63,4 +72,14 @@ void ANimbleTerminatorCharacter::MoveRight(float Value)
 	const FVector Direction(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y));
 
 	AddMovementInput(Direction, Value);
+}
+
+void ANimbleTerminatorCharacter::TurnAtRate(float Rate)
+{
+	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+}
+
+void ANimbleTerminatorCharacter::LookUpAtRate(float Rate)
+{
+	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
