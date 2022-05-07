@@ -37,6 +37,8 @@ protected:
 	// Called when the fire button is pressed
 	void FireWeapon();
 
+	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
+
 private:
 	// Camera boom positioning the camera behind the Character 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
