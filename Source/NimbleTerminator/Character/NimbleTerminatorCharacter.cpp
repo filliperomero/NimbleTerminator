@@ -20,9 +20,9 @@ ANimbleTerminatorCharacter::ANimbleTerminatorCharacter() :
 	// Create a Camera Boom
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.f;
+	CameraBoom->TargetArmLength = 180.f;
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-	CameraBoom->SocketOffset = FVector(0.f, 50.f, 50.f);
+	CameraBoom->SocketOffset = FVector(0.f, 50.f, 75.f);
 
 	// Create a Follow Camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -44,11 +44,38 @@ ANimbleTerminatorCharacter::ANimbleTerminatorCharacter() :
 void ANimbleTerminatorCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (FollowCamera)
+	{
+		CameraDefaultFOV = GetFollowCamera()->FieldOfView;
+		CameraCurrentFOV = CameraDefaultFOV;
+	}
 }
 
 void ANimbleTerminatorCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	InterpFOV(DeltaTime);
+}
+
+void ANimbleTerminatorCharacter::InterpFOV(float DeltaTime)
+{
+	if (bAiming)
+	{
+		// Interpolate to zoomed FOV
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraZoomedFOV, DeltaTime, ZoomInterpSpeed);
+	}
+	else
+	{
+		// Interpolate to Default FOV
+		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraDefaultFOV, DeltaTime, ZoomInterpSpeed);
+	}
+	
+	if (GetFollowCamera())
+	{
+		GetFollowCamera()->SetFieldOfView(CameraCurrentFOV);
+	}
 }
 
 void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -67,6 +94,8 @@ void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &ThisClass::FireWeapon);
+	PlayerInputComponent->BindAction("AimingButton", IE_Pressed, this, &ThisClass::AimingButtonPressed);
+	PlayerInputComponent->BindAction("AimingButton", IE_Released, this, &ThisClass::AimingButtonRelease);
 }
 
 void ANimbleTerminatorCharacter::MoveForward(float Value)
@@ -216,4 +245,14 @@ bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketL
 	}
 
 	return false;
+}
+
+void ANimbleTerminatorCharacter::AimingButtonPressed()
+{
+	bAiming = true;
+}
+
+void ANimbleTerminatorCharacter::AimingButtonRelease()
+{
+	bAiming = false;
 }
