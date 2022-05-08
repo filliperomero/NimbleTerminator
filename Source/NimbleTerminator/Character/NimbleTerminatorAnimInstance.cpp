@@ -33,6 +33,8 @@ void UNimbleTerminatorAnimInstance::UpdateAnimationProperties(float DeltaTime)
 
 	if (NimbleTerminatorCharacter->GetVelocity().Size() > 0.f)
 		LastMovementOffsetYaw = MovementOffsetYaw;
+
+	bAiming = NimbleTerminatorCharacter->GetAiming();
 }
 
 void UNimbleTerminatorAnimInstance::NativeInitializeAnimation()
