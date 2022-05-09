@@ -143,7 +143,8 @@ void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* Play
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-	PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &ThisClass::FireWeapon);
+	PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &ThisClass::FireButtonPressed);
+	PlayerInputComponent->BindAction("FireButton", IE_Released, this, &ThisClass::FireButtonReleased);
 	PlayerInputComponent->BindAction("AimingButton", IE_Pressed, this, &ThisClass::AimingButtonPressed);
 	PlayerInputComponent->BindAction("AimingButton", IE_Released, this, &ThisClass::AimingButtonRelease);
 }
@@ -207,6 +208,37 @@ void ANimbleTerminatorCharacter::LookUp(float Value)
 
 	AddControllerPitchInput(Value * LookUpScaleFactor);
 }
+
+void ANimbleTerminatorCharacter::FireButtonPressed()
+{
+	bFireButtonPressed = true;
+	StartFireTimer();
+}
+
+void ANimbleTerminatorCharacter::FireButtonReleased()
+{
+	bFireButtonPressed = false;
+}
+
+void ANimbleTerminatorCharacter::StartFireTimer()
+{
+	if (bCanFire)
+	{
+		bCanFire = false;
+		FireWeapon();
+		GetWorldTimerManager().SetTimer(FireTimer, this, &ThisClass::FireTimerFinished, AutomaticFireRate);
+	}
+}
+
+void ANimbleTerminatorCharacter::FireTimerFinished()
+{
+	bCanFire = true;
+	if (bFireButtonPressed)
+	{
+		StartFireTimer();
+	}
+}
+
 
 void ANimbleTerminatorCharacter::FireWeapon()
 {

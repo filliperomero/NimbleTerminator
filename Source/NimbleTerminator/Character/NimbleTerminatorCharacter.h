@@ -66,6 +66,9 @@ protected:
 	UFUNCTION()
 	void FinishCrosshairBulletFire();
 
+	void FireButtonPressed();
+	void FireButtonReleased();
+
 private:
 	// Camera boom positioning the camera behind the Character 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -168,6 +171,19 @@ private:
 	bool bFiringBullet = false;
 
 	FTimerHandle CrosshairShootTimer;
+
+	/**
+	 * Shooting
+	 */
+	bool bFireButtonPressed = false;
+	bool bCanFire = true;
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float AutomaticFireRate = 0.15f;
+
+	FTimerHandle FireTimer;
+
+	void StartFireTimer();
+	void FireTimerFinished();
 	
 public:
 
