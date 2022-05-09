@@ -57,6 +57,7 @@ void ANimbleTerminatorCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	InterpFOV(DeltaTime);
+	SetLookRates();
 }
 
 void ANimbleTerminatorCharacter::InterpFOV(float DeltaTime)
@@ -78,6 +79,20 @@ void ANimbleTerminatorCharacter::InterpFOV(float DeltaTime)
 	}
 }
 
+void ANimbleTerminatorCharacter::SetLookRates()
+{
+	if (bAiming)
+	{
+		BaseTurnRate = AimingTurnRate;
+		BaseLookUpRate = AimingLoopUpRate;
+	}
+	else
+	{
+		BaseTurnRate = HipTurnRate;
+		BaseLookUpRate = AimingLoopUpRate;
+	}
+}
+
 void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -88,8 +103,8 @@ void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	PlayerInputComponent->BindAxis("MoveRight", this, &ThisClass::MoveRight);
 	PlayerInputComponent->BindAxis("TurnRate", this, &ThisClass::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ThisClass::LookUpAtRate);
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &ThisClass::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &ThisClass::LookUp);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
@@ -124,9 +139,38 @@ void ANimbleTerminatorCharacter::TurnAtRate(float Rate)
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
+void ANimbleTerminatorCharacter::Turn(float Value)
+{
+	float TurnScaleFactor;
+	if (bAiming)
+	{
+		TurnScaleFactor = MouseAimingTurnRate;
+	}
+	else
+	{
+		TurnScaleFactor = MouseHipTurnRate;
+	}
+	AddControllerYawInput(Value * TurnScaleFactor);
+}
+
 void ANimbleTerminatorCharacter::LookUpAtRate(float Rate)
 {
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+}
+
+void ANimbleTerminatorCharacter::LookUp(float Value)
+{
+	float LookUpScaleFactor;
+	if (bAiming)
+	{
+		LookUpScaleFactor = MouseAimingLookUpRate;
+	}
+	else
+	{
+		LookUpScaleFactor = MouseLookUpRate;
+	}
+
+	AddControllerPitchInput(Value * LookUpScaleFactor);
 }
 
 void ANimbleTerminatorCharacter::FireWeapon()

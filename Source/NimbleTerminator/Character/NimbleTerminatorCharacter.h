@@ -29,10 +29,21 @@ protected:
 	 */
 	void TurnAtRate(float Rate);
 	/**
+	 * Rotate controller based on mouse X movement
+	 * @param Value  The input value from mouse movement
+	 */
+	void Turn(float Value);
+	
+	/**
 	 * Called via input to look up/down at a given rate
 	 * @param Rate  This is a normalized rate, i.e. 1.0 means 100% of desired rate
 	 */
 	void LookUpAtRate(float Rate);
+	/**
+	 * Rotate controller based on mouse Y movement
+	 * @param Value  The input value from mouse movement
+	 */
+	void LookUp(float Value);
 
 	// Called when the fire button is pressed
 	void FireWeapon();
@@ -45,6 +56,9 @@ protected:
 
 	void InterpFOV(float DeltaTime);
 
+	// Set BaseTurnRate and BaseLookUpRate based on aiming
+	void SetLookRates();
+
 private:
 	// Camera boom positioning the camera behind the Character 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -55,12 +69,40 @@ private:
 	class UCameraComponent* FollowCamera;
 
 	// Base turn rate, in deg/sec. Other scaling may affect final turn rate
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	float BaseTurnRate;
 
+	// Turn Rate while not aiming
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float HipTurnRate = 45.f;
+
+	// Turn Rate while aiming
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float AimingTurnRate = 20.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	float MouseHipTurnRate = 1.f;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	float MouseAimingTurnRate = 0.2f;
+
 	// Base look up/down rate, in deg/sec. Other scaling may affect final turn rate
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	float BaseLookUpRate;
+
+	// Look up Rate while not aiming
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float HipLookUpRate = 45.f;
+
+	// Look up rate while aiming
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	float AimingLoopUpRate = 20.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	float MouseLookUpRate = 1.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	float MouseAimingLookUpRate = 0.2f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class USoundCue* FireSound;
@@ -103,3 +145,4 @@ public:
 	FORCEINLINE bool GetAiming() const { return bAiming; }
 
 };
+
