@@ -58,6 +58,7 @@ void ANimbleTerminatorCharacter::Tick(float DeltaTime)
 
 	InterpFOV(DeltaTime);
 	SetLookRates();
+	CalculateCrosshairSpread(DeltaTime);
 }
 
 void ANimbleTerminatorCharacter::InterpFOV(float DeltaTime)
@@ -91,6 +92,40 @@ void ANimbleTerminatorCharacter::SetLookRates()
 		BaseTurnRate = HipTurnRate;
 		BaseLookUpRate = AimingLoopUpRate;
 	}
+}
+
+void ANimbleTerminatorCharacter::CalculateCrosshairSpread(float DeltaTime)
+{
+	const float MaxWalkSpeed = GetCharacterMovement() ? GetCharacterMovement()->MaxWalkSpeed : 600.f;
+	const FVector2D WalkSpeedRange(0.f, MaxWalkSpeed);
+	const FVector2D VelocityMultiplierRange(0.f, 1.f);
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+
+	CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+
+	CrosshairInAirFactor = GetCharacterMovement()->IsFalling()
+		? FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f)
+		: FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
+
+	CrosshairAimFactor = bAiming
+		? FMath::FInterpTo(CrosshairAimFactor, 0.4f, DeltaTime, 30.f)
+		: FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
+	
+	CrosshairShootingFactor = bFiringBullet
+		? FMath::FInterpTo(CrosshairShootingFactor, 0.3f, DeltaTime, 60.f)
+		: FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 60.f);
+	
+	CrosshairSpreadMultiplier = 0.5f
+		+ CrosshairVelocityFactor
+		+ CrosshairInAirFactor
+		- CrosshairAimFactor
+		+ CrosshairShootingFactor;
+}
+
+float ANimbleTerminatorCharacter::GetCrosshairSpreadMultiplier() const
+{
+	return CrosshairSpreadMultiplier;
 }
 
 void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -224,6 +259,8 @@ void ANimbleTerminatorCharacter::FireWeapon()
 		AnimInstance->Montage_Play(HipFireMontage);
 		AnimInstance->Montage_JumpToSection(FName("StartFire"));
 	}
+
+	StartCrosshairBulletFire();
 }
 
 bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
@@ -237,7 +274,8 @@ bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketL
 
 	// Get screen space location of crosshairs
 	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
-	CrosshairLocation.Y -= 50.f;
+	// Enable if want to offset by 50 (must change in the HUD blueprint)
+	// CrosshairLocation.Y -= 50.f;
 	FVector CrosshairWorldPosition;
 	FVector CrosshairWorldDirection;
 
@@ -289,6 +327,17 @@ bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketL
 	}
 
 	return false;
+}
+
+void ANimbleTerminatorCharacter::StartCrosshairBulletFire()
+{
+	bFiringBullet = true;
+	GetWorldTimerManager().SetTimer(CrosshairShootTimer, this, &ThisClass::FinishCrosshairBulletFire, ShootTimeDuration);
+}
+
+void ANimbleTerminatorCharacter::FinishCrosshairBulletFire()
+{
+	bFiringBullet = false;
 }
 
 void ANimbleTerminatorCharacter::AimingButtonPressed()

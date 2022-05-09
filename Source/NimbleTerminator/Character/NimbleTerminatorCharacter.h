@@ -59,6 +59,13 @@ protected:
 	// Set BaseTurnRate and BaseLookUpRate based on aiming
 	void SetLookRates();
 
+	void CalculateCrosshairSpread(float DeltaTime);
+	
+	void StartCrosshairBulletFire();
+	
+	UFUNCTION()
+	void FinishCrosshairBulletFire();
+
 private:
 	// Camera boom positioning the camera behind the Character 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -137,12 +144,39 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float CameraZoomedFOV = 30.f;
+
+	/**
+	 * Crosshair
+	 */
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairSpreadMultiplier = 0.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairVelocityFactor = 0.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairInAirFactor = 0.f;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairAimFactor = 0.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crosshairs, meta = (AllowPrivateAccess = "true"))
+	float CrosshairShootingFactor = 0.f;
+
+	float ShootTimeDuration = 0.05f;
+	bool bFiringBullet = false;
+
+	FTimerHandle CrosshairShootTimer;
 	
 public:
 
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE bool GetAiming() const { return bAiming; }
+
+	UFUNCTION(BlueprintCallable)
+	float GetCrosshairSpreadMultiplier() const;
 
 };
 
