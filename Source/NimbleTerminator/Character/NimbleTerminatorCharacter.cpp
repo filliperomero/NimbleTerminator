@@ -1,15 +1,18 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+	// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "NimbleTerminatorCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "NimbleTerminator/Weapon/Item.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
+#include "Components/WidgetComponent.h"
 
 ANimbleTerminatorCharacter::ANimbleTerminatorCharacter() :
 	BaseTurnRate(45.f),
@@ -59,6 +62,7 @@ void ANimbleTerminatorCharacter::Tick(float DeltaTime)
 	InterpFOV(DeltaTime);
 	SetLookRates();
 	CalculateCrosshairSpread(DeltaTime);
+	TraceForItems();
 }
 
 void ANimbleTerminatorCharacter::InterpFOV(float DeltaTime)
@@ -121,6 +125,34 @@ void ANimbleTerminatorCharacter::CalculateCrosshairSpread(float DeltaTime)
 		+ CrosshairInAirFactor
 		- CrosshairAimFactor
 		+ CrosshairShootingFactor;
+}
+
+void ANimbleTerminatorCharacter::TraceForItems()
+{
+	if (bShouldTraceForItems)
+	{
+		FHitResult ItemTraceResult;
+		FVector HitLocation;
+		TraceUnderCrosshairs(ItemTraceResult, HitLocation);
+
+		if (ItemTraceResult.bBlockingHit)
+		{
+			AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
+			if (HitItem && HitItem->GetPickupWidget())
+				HitItem->GetPickupWidget()->SetVisibility(true);
+			
+			// We are hitting a different AItem this frame from last frame or AItem is null
+			if (TraceHitItemLastFrame && TraceHitItemLastFrame != HitItem)
+				TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+			
+			TraceHitItemLastFrame = HitItem;
+		}
+	}
+	else if (TraceHitItemLastFrame)
+	{
+		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+		TraceHitItemLastFrame = nullptr;
+	}
 }
 
 float ANimbleTerminatorCharacter::GetCrosshairSpreadMultiplier() const
@@ -239,7 +271,6 @@ void ANimbleTerminatorCharacter::FireTimerFinished()
 	}
 }
 
-
 void ANimbleTerminatorCharacter::FireWeapon()
 {
 	if (FireSound)
@@ -297,64 +328,27 @@ void ANimbleTerminatorCharacter::FireWeapon()
 
 bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
 {
-	// Get current size of the viewport
-	FVector2D ViewportSize;
-	if (GEngine && GEngine->GameViewport)
+	FHitResult CrosshairHitResult;
+	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamLocation);
+
+	if (bCrosshairHit)
 	{
-		GEngine->GameViewport->GetViewportSize(ViewportSize);
+		OutBeamLocation = CrosshairHitResult.Location;
 	}
 
-	// Get screen space location of crosshairs
-	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
-	// Enable if want to offset by 50 (must change in the HUD blueprint)
-	// CrosshairLocation.Y -= 50.f;
-	FVector CrosshairWorldPosition;
-	FVector CrosshairWorldDirection;
+	// Perform a second trace, this time from the gun barrel
+	FHitResult WeaponTraceHit;
+	const FVector WeaponTraceStart(MuzzleSocketLocation);
+	const FVector StartToEnd(OutBeamLocation - MuzzleSocketLocation);
+	// Increase by 25%
+	const FVector WeaponTraceEnd(MuzzleSocketLocation + StartToEnd * 1.25f );
 
-	// Get world position and direction of crosshairs
-	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
-		UGameplayStatics::GetPlayerController(this, 0),
-		CrosshairLocation,
-		CrosshairWorldPosition,
-		CrosshairWorldDirection
-	);
-	
-	// Was deprojection succesfull
-	if (bScreenToWorld)
+	GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd, ECollisionChannel::ECC_Visibility);
+
+	// Object between barrel and BeamEndPOint
+	if (WeaponTraceHit.bBlockingHit)
 	{
-		FHitResult TraceHit;
-		FVector Start = CrosshairWorldPosition;
-		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
-
-		// Set beam end point to line trace end point
-		OutBeamLocation = End;
-
-		// Trace outward from crosshairs world location
-		GetWorld()->LineTraceSingleByChannel(TraceHit, Start, End, ECollisionChannel::ECC_Visibility);
-
-		if (TraceHit.bBlockingHit)
-		{
-			// Beam end point is now trace hit location
-			OutBeamLocation = TraceHit.ImpactPoint;
-		}
-		else
-		{
-			TraceHit.ImpactPoint = OutBeamLocation;
-		}
-
-		// Perform a second trace, this time from the gun barrel
-		FHitResult WeaponTraceHit;
-		const FVector WeaponTraceStart(MuzzleSocketLocation);
-		const FVector WeaponTraceEnd(OutBeamLocation);
-
-		GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd, ECollisionChannel::ECC_Visibility);
-
-		// Object between barrel and BeamEndPOint
-		if (WeaponTraceHit.bBlockingHit)
-		{
-			OutBeamLocation = WeaponTraceHit.ImpactPoint;
-		}
-
+		OutBeamLocation = WeaponTraceHit.ImpactPoint;
 		return true;
 	}
 
@@ -380,4 +374,58 @@ void ANimbleTerminatorCharacter::AimingButtonPressed()
 void ANimbleTerminatorCharacter::AimingButtonRelease()
 {
 	bAiming = false;
+}
+
+bool ANimbleTerminatorCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)
+{
+	// Get current size of the viewport
+	FVector2D ViewportSize;
+	if (GEngine && GEngine->GameViewport)
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+
+	// Get screen space location of crosshairs
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
+	// Enable if want to offset by 50 (must change in the HUD blueprint)
+	// CrosshairLocation.Y -= 50.f;
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	// Get world position and direction of crosshairs
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection
+	);
+
+	// Was deprojection succesfull
+	if (bScreenToWorld)
+	{
+		const FVector Start(CrosshairWorldPosition);
+		const FVector End(Start + CrosshairWorldDirection * TRACE_LENGTH);
+		OutHitLocation = End;
+
+		GetWorld()->LineTraceSingleByChannel(OutHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+
+		if (OutHitResult.bBlockingHit)
+		{
+			OutHitLocation = OutHitResult.Location;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void ANimbleTerminatorCharacter::IncrementOverlappedItemCount(int16 Amount)
+{
+	if (OverlappedItemCount + Amount <= 0)
+	{
+		OverlappedItemCount = 0;
+		bShouldTraceForItems = false;
+		return;
+	}
+
+	OverlappedItemCount += Amount;
+	bShouldTraceForItems = true;
 }
