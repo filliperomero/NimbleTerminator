@@ -461,7 +461,8 @@ void ANimbleTerminatorCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 
 	if (HandSocket)
 		HandSocket->AttachActor(WeaponToEquip, GetMesh());
-
+	
 	EquippedWeapon = WeaponToEquip;
+	EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
 }
 

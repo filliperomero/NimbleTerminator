@@ -18,6 +18,18 @@ enum class EItemRarity : uint8
 	EIR_MAX UMETA(DisplayName = "DefaultMax")
 };
 
+UENUM(BlueprintType)
+enum class EItemState : uint8
+{
+	EIS_Pickup UMETA(DisplayName = "Pickup"),
+	EIS_EquipInterping UMETA(DisplayName = "EquipInterping"),
+	EIS_PickedUp UMETA(DisplayName = "PickedUp"),
+	EIS_Equipped UMETA(DisplayName = "Equipped"),
+	EIS_Falling UMETA(DisplayName = "Falling"),
+	
+	EIS_MAX UMETA(DisplayName = "DefaultMax")
+};
+
 UCLASS()
 class NIMBLETERMINATOR_API AItem : public AActor
 {
@@ -75,8 +87,13 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
 	TArray<bool> ActiveStars;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	EItemState ItemState = EItemState::EIS_Pickup;
+
 public:	
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; }
+	FORCEINLINE EItemState GetItemState() const { return ItemState; }
+	FORCEINLINE void SetItemState(const EItemState State) { ItemState = State; }
 };
