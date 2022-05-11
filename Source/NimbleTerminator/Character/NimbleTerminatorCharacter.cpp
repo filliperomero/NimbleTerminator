@@ -4,8 +4,6 @@
 #include "NimbleTerminatorCharacter.h"
 
 #include "Camera/CameraComponent.h"
-#include "Components/BoxComponent.h"
-#include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -184,6 +182,8 @@ void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	PlayerInputComponent->BindAction("FireButton", IE_Released, this, &ThisClass::FireButtonReleased);
 	PlayerInputComponent->BindAction("AimingButton", IE_Pressed, this, &ThisClass::AimingButtonPressed);
 	PlayerInputComponent->BindAction("AimingButton", IE_Released, this, &ThisClass::AimingButtonRelease);
+	PlayerInputComponent->BindAction("Select", IE_Pressed, this, &ThisClass::SelectButtonPressed);
+	PlayerInputComponent->BindAction("Select", IE_Released, this, &ThisClass::SelectButtonReleased);
 }
 
 void ANimbleTerminatorCharacter::MoveForward(float Value)
@@ -458,5 +458,27 @@ void ANimbleTerminatorCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 	
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
+}
+
+void ANimbleTerminatorCharacter::DropWeapon()
+{
+	if (EquippedWeapon == nullptr) return;
+
+	if (EquippedWeapon->GetItemMesh())
+	{
+		const FDetachmentTransformRules DetachmentTransformRules(EDetachmentRule::KeepWorld, true);
+		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
+		EquippedWeapon->SetItemState(EItemState::EIS_Falling);
+		EquippedWeapon->ThrowWeapon();
+	}
+}
+
+void ANimbleTerminatorCharacter::SelectButtonPressed()
+{
+	DropWeapon();
+}
+
+void ANimbleTerminatorCharacter::SelectButtonReleased()
+{
 }
 

@@ -76,6 +76,10 @@ protected:
 	class AWeapon* SpawnDefaultWeapon();
 	void EquipWeapon(AWeapon* WeaponToEquip);
 
+	void DropWeapon();
+	void SelectButtonPressed();
+	void SelectButtonReleased();
+	
 private:
 	// Camera boom positioning the camera behind the Character 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
