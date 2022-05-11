@@ -4,12 +4,15 @@
 #include "NimbleTerminatorCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "NimbleTerminator/Weapon/Item.h"
+#include "NimbleTerminator/Weapon/Weapon.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "Components/WidgetComponent.h"
@@ -53,6 +56,8 @@ void ANimbleTerminatorCharacter::BeginPlay()
 		CameraDefaultFOV = GetFollowCamera()->FieldOfView;
 		CameraCurrentFOV = CameraDefaultFOV;
 	}
+	
+	EquipWeapon(SpawnDefaultWeapon());
 }
 
 void ANimbleTerminatorCharacter::Tick(float DeltaTime)
@@ -429,3 +434,34 @@ void ANimbleTerminatorCharacter::IncrementOverlappedItemCount(int16 Amount)
 	OverlappedItemCount += Amount;
 	bShouldTraceForItems = true;
 }
+
+AWeapon* ANimbleTerminatorCharacter::SpawnDefaultWeapon()
+{
+	if (DefaultWeaponClass)
+	{
+		AWeapon* DefaultWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultWeaponClass);
+
+		return DefaultWeapon;
+	}
+
+	return nullptr;
+}
+
+void ANimbleTerminatorCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+{
+	if (WeaponToEquip == nullptr) return;
+
+	if (WeaponToEquip->GetAreaSphere())
+		WeaponToEquip->GetAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
+	if (WeaponToEquip->GetCollisionBox())
+		WeaponToEquip->GetCollisionBox()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	
+	const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
+
+	if (HandSocket)
+		HandSocket->AttachActor(WeaponToEquip, GetMesh());
+
+	EquippedWeapon = WeaponToEquip;
+}
+
