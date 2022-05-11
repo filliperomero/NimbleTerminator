@@ -61,6 +61,7 @@ protected:
 	);
 	
 	void SetActiveStars();
+	void SetItemProperties(const EItemState State);
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
@@ -95,5 +96,5 @@ public:
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE UBoxComponent* GetCollisionBox() const { return CollisionBox; }
 	FORCEINLINE EItemState GetItemState() const { return ItemState; }
-	FORCEINLINE void SetItemState(const EItemState State) { ItemState = State; }
+	void SetItemState(const EItemState State);
 };

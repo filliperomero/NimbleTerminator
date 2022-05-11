@@ -450,13 +450,7 @@ AWeapon* ANimbleTerminatorCharacter::SpawnDefaultWeapon()
 void ANimbleTerminatorCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (WeaponToEquip == nullptr) return;
-
-	if (WeaponToEquip->GetAreaSphere())
-		WeaponToEquip->GetAreaSphere()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-
-	if (WeaponToEquip->GetCollisionBox())
-		WeaponToEquip->GetCollisionBox()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	
+		
 	const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
 
 	if (HandSocket)
