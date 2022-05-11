@@ -79,6 +79,7 @@ protected:
 	void DropWeapon();
 	void SelectButtonPressed();
 	void SelectButtonReleased();
+	void SwapWeapon(AWeapon* WeaponToSwap);
 	
 private:
 	// Camera boom positioning the camera behind the Character 
@@ -205,6 +206,10 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	class AItem* TraceHitItemLastFrame;
+
+	// The item currently hit by our trace in TraceForItems (could be nullptr)
+	UPROPERTY()
+	AItem* TraceHitItem;
 
 	/**
 	 * Weapon

@@ -140,21 +140,22 @@ void ANimbleTerminatorCharacter::TraceForItems()
 
 		if (ItemTraceResult.bBlockingHit)
 		{
-			AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
-			if (HitItem && HitItem->GetPickupWidget())
-				HitItem->GetPickupWidget()->SetVisibility(true);
+			TraceHitItem = Cast<AItem>(ItemTraceResult.GetActor());
+			if (TraceHitItem && TraceHitItem->GetPickupWidget())
+				TraceHitItem->GetPickupWidget()->SetVisibility(true);
 			
 			// We are hitting a different AItem this frame from last frame or AItem is null
-			if (TraceHitItemLastFrame && TraceHitItemLastFrame != HitItem)
+			if (TraceHitItemLastFrame && TraceHitItemLastFrame != TraceHitItem)
 				TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
 			
-			TraceHitItemLastFrame = HitItem;
+			TraceHitItemLastFrame = TraceHitItem;
 		}
 	}
 	else if (TraceHitItemLastFrame)
 	{
 		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
 		TraceHitItemLastFrame = nullptr;
+		TraceHitItem = nullptr;
 	}
 }
 
@@ -470,15 +471,34 @@ void ANimbleTerminatorCharacter::DropWeapon()
 		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
 		EquippedWeapon->SetItemState(EItemState::EIS_Falling);
 		EquippedWeapon->ThrowWeapon();
+
+		EquippedWeapon = nullptr;
 	}
 }
 
 void ANimbleTerminatorCharacter::SelectButtonPressed()
 {
-	DropWeapon();
+	if (TraceHitItem)
+	{
+		const auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
+		SwapWeapon(TraceHitWeapon);
+	}
+	else
+	{
+		DropWeapon();
+	}
+	
 }
 
 void ANimbleTerminatorCharacter::SelectButtonReleased()
 {
+}
+
+void ANimbleTerminatorCharacter::SwapWeapon(AWeapon* WeaponToSwap)
+{
+	DropWeapon();
+	EquipWeapon(WeaponToSwap);
+	TraceHitItem = nullptr;
+	TraceHitItemLastFrame = nullptr;
 }
 
