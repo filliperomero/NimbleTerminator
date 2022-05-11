@@ -40,6 +40,8 @@ void AItem::BeginPlay()
 		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnSphereOverlap);
 		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnSphereEndOverlap);
 	}
+
+	SetActiveStars();
 }
 
 void AItem::Tick(float DeltaTime)
@@ -66,5 +68,29 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 		ANimbleTerminatorCharacter* NimbleTerminatorCharacter = Cast<ANimbleTerminatorCharacter>(OtherActor);
 		if (NimbleTerminatorCharacter)
 			NimbleTerminatorCharacter->IncrementOverlappedItemCount(-1);
+	}
+}
+
+void AItem::SetActiveStars()
+{
+	// index 0 will not be used in this case
+	for (int32 i = 0; i <= 5; i++)
+		ActiveStars.Add(false);
+
+	switch (ItemRarity)
+	{
+	case EItemRarity::EIR_Legendary:
+		ActiveStars[5] = true;
+	case EItemRarity::EIR_Rare:
+		ActiveStars[4] = true;
+	case EItemRarity::EIR_Uncommon:
+		ActiveStars[3] = true;
+	case EItemRarity::EIR_Common:
+		ActiveStars[2] = true;
+	case EItemRarity::EIR_Damaged:
+		ActiveStars[1] = true;
+		break;
+	default:
+		break;
 	}
 }
