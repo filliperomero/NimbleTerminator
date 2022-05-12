@@ -480,8 +480,9 @@ void ANimbleTerminatorCharacter::SelectButtonPressed()
 {
 	if (TraceHitItem)
 	{
-		const auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
-		SwapWeapon(TraceHitWeapon);
+		// const auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
+		// SwapWeapon(TraceHitWeapon);
+		TraceHitItem->StartItemCurve(this);
 	}
 	else
 	{
@@ -500,5 +501,23 @@ void ANimbleTerminatorCharacter::SwapWeapon(AWeapon* WeaponToSwap)
 	EquipWeapon(WeaponToSwap);
 	TraceHitItem = nullptr;
 	TraceHitItemLastFrame = nullptr;
+}
+
+FVector ANimbleTerminatorCharacter::GetCameraInterpLocation()
+{
+	if (FollowCamera == nullptr) return FVector(0.f, 0.f, 0.f);
+	
+	const FVector CameraWorldLocation(FollowCamera->GetComponentLocation());
+	const FVector CameraForward(FollowCamera->GetForwardVector());
+
+	return CameraWorldLocation + CameraForward * CameraInterpDistance + FVector(0.f, 0.f, CameraInterpElevation);
+}
+
+void ANimbleTerminatorCharacter::GetPickupItem(AItem* Item)
+{
+	auto Weapon = Cast<AWeapon>(Item);
+
+	if (Weapon)
+		SwapWeapon(Weapon);
 }
 
