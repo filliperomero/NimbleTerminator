@@ -8,6 +8,15 @@
 
 #define TRACE_LENGTH 80'000.f
 
+UENUM(BlueprintType)
+enum class EAmmoType : uint8
+{
+	EAT_9mm UMETA(DisplayName = "9mm"),
+	EAT_AR UMETA(DisplayName = "Assault Rifle"),
+
+	EAT_MAX UMETA(DisplayName = "DefaultMax"),
+};
+
 UCLASS()
 class NIMBLETERMINATOR_API ANimbleTerminatorCharacter : public ACharacter
 {
@@ -80,6 +89,8 @@ protected:
 	void SelectButtonPressed();
 	void SelectButtonReleased();
 	void SwapWeapon(AWeapon* WeaponToSwap);
+
+	void InitializeAmmoMap();
 	
 private:
 	// Camera boom positioning the camera behind the Character 
@@ -227,6 +238,18 @@ private:
 	// Distance outward from the camera for the interp destionation
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Items, meta = (AllowPrivateAccess = "true"))
 	float CameraInterpElevation = 65.f;
+
+	/**
+	 * Ammo
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	TMap<EAmmoType, int32> AmmoMap;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	int32 Starting9mmAmmo = 85;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	int32 StartingARAmmo = 120;
 	
 public:
 

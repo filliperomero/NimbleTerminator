@@ -56,6 +56,7 @@ void ANimbleTerminatorCharacter::BeginPlay()
 	}
 	
 	EquipWeapon(SpawnDefaultWeapon());
+	InitializeAmmoMap();
 }
 
 void ANimbleTerminatorCharacter::Tick(float DeltaTime)
@@ -519,5 +520,11 @@ void ANimbleTerminatorCharacter::GetPickupItem(AItem* Item)
 
 	if (Weapon)
 		SwapWeapon(Weapon);
+}
+
+void ANimbleTerminatorCharacter::InitializeAmmoMap()
+{
+	AmmoMap.Add(EAmmoType::EAT_9mm, Starting9mmAmmo);
+	AmmoMap.Add(EAmmoType::EAT_AR, StartingARAmmo);
 }
 
