@@ -17,6 +17,16 @@ enum class EAmmoType : uint8
 	EAT_MAX UMETA(DisplayName = "DefaultMax"),
 };
 
+UENUM()
+enum class ECombatState: uint8
+{
+	ECS_Unoccupied UMETA(DisplayName = "Unoccupied"),
+	ECS_FireTimerInProgress UMETA(DisplayName = "FireTimerInProgress"),
+	ECS_Reloading UMETA(DisplayName = "Reloading"),
+
+	ECS_MAX UMETA(DisplayName = "DefaultMax"),
+};
+
 UCLASS()
 class NIMBLETERMINATOR_API ANimbleTerminatorCharacter : public ACharacter
 {
@@ -57,6 +67,10 @@ protected:
 	// Called when the fire button is pressed
 	void FireWeapon();
 
+	void PlayFireSound();
+	void PlayGunfireMontage();
+	void SendBullet();
+
 	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
 
 	// Set bAiming to true/false with button press
@@ -92,7 +106,7 @@ protected:
 
 	void InitializeAmmoMap();
 	bool WeaponHasAmmo();
-	
+
 private:
 	// Camera boom positioning the camera behind the Character 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -251,6 +265,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	int32 StartingARAmmo = 120;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	ECombatState CombatState = ECombatState::ECS_Unoccupied;
 	
 public:
 

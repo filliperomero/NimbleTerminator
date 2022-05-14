@@ -250,10 +250,8 @@ void ANimbleTerminatorCharacter::LookUp(float Value)
 
 void ANimbleTerminatorCharacter::FireButtonPressed()
 {
-	if (!WeaponHasAmmo()) return;
-	
 	bFireButtonPressed = true;
-	StartFireTimer();
+	FireWeapon();
 }
 
 void ANimbleTerminatorCharacter::FireButtonReleased()
@@ -263,80 +261,36 @@ void ANimbleTerminatorCharacter::FireButtonReleased()
 
 void ANimbleTerminatorCharacter::StartFireTimer()
 {
-	if (bCanFire)
-	{
-		bCanFire = false;
-		FireWeapon();
-		GetWorldTimerManager().SetTimer(FireTimer, this, &ThisClass::FireTimerFinished, AutomaticFireRate);
-	}
+	CombatState = ECombatState::ECS_FireTimerInProgress;
+
+	GetWorldTimerManager().SetTimer(FireTimer, this, &ThisClass::FireTimerFinished, AutomaticFireRate);
 }
 
 void ANimbleTerminatorCharacter::FireTimerFinished()
 {
-	bCanFire = true;
-	if (bFireButtonPressed && WeaponHasAmmo())
+	CombatState = ECombatState::ECS_Unoccupied;
+	if (WeaponHasAmmo())
 	{
-		StartFireTimer();
+		if (bFireButtonPressed)
+			FireWeapon();
+	}
+	else
+	{
+		// Reload
 	}
 }
 
 void ANimbleTerminatorCharacter::FireWeapon()
 {
-	if (EquippedWeapon == nullptr) return;
+	if (EquippedWeapon == nullptr || CombatState != ECombatState::ECS_Unoccupied || !WeaponHasAmmo()) return;
 	
-	if (FireSound)
-	{
-		UGameplayStatics::PlaySound2D(this, FireSound);
-	}
-
-	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName(FName("BarrelSocket"));
-
-	if (BarrelSocket)
-	{
-		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
-
-		UWorld* World = GetWorld();
-		if (World)
-		{
-			if (MuzzleFlash)
-			{
-				UGameplayStatics::SpawnEmitterAtLocation(World, MuzzleFlash, SocketTransform);
-			}
-
-			FVector BeamEnd;
-			bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);
-
-			if (bBeamEnd)
-			{
-				if (ImpactParticles)
-				{
-					UGameplayStatics::SpawnEmitterAtLocation(World, ImpactParticles, BeamEnd);
-				}
-
-				if (BeamParticles)
-				{
-					UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(World, BeamParticles, SocketTransform);
-				
-					if (Beam)
-					{
-						Beam->SetVectorParameter(FName("Target"), BeamEnd);
-					}
-				}
-			}
-		}
-	}
-
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-
-	if (AnimInstance && HipFireMontage)
-	{
-		AnimInstance->Montage_Play(HipFireMontage);
-		AnimInstance->Montage_JumpToSection(FName("StartFire"));
-	}
-
+	PlayFireSound();
+	SendBullet();
+	PlayGunfireMontage();
 	StartCrosshairBulletFire();
 
-	if (EquippedWeapon) EquippedWeapon->DecrementAmmo();
+	EquippedWeapon->DecrementAmmo();
+	StartFireTimer();
 }
 
 bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
@@ -366,6 +320,63 @@ bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketL
 	}
 
 	return false;
+}
+
+void ANimbleTerminatorCharacter::PlayFireSound()
+{
+	if (FireSound)
+		UGameplayStatics::PlaySound2D(this, FireSound);
+}
+
+void ANimbleTerminatorCharacter::PlayGunfireMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && HipFireMontage)
+	{
+		AnimInstance->Montage_Play(HipFireMontage);
+		AnimInstance->Montage_JumpToSection(FName("StartFire"));
+	}
+}
+
+void ANimbleTerminatorCharacter::SendBullet()
+{
+	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName(FName("BarrelSocket"));
+
+	if (BarrelSocket)
+	{
+		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
+
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			if (MuzzleFlash)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(World, MuzzleFlash, SocketTransform);
+			}
+
+			FVector BeamEnd;
+			bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);
+
+			if (bBeamEnd)
+			{
+				if (ImpactParticles)
+				{
+					UGameplayStatics::SpawnEmitterAtLocation(World, ImpactParticles, BeamEnd);
+				}
+
+				if (BeamParticles)
+				{
+					UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(World, BeamParticles, SocketTransform);
+			
+					if (Beam)
+					{
+						Beam->SetVectorParameter(FName("Target"), BeamEnd);
+					}
+				}
+			}
+		}
+	}
 }
 
 void ANimbleTerminatorCharacter::StartCrosshairBulletFire()
