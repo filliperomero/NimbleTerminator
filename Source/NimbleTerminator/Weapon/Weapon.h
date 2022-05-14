@@ -26,6 +26,14 @@ private:
 	float ThrowWeaponTime = 0.7f;
 	bool bFalling = false;
 
+	/**
+	 * Ammo
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	int32 Ammo = 0;
+
 public:
 	void ThrowWeapon();
+	FORCEINLINE int32 GetAmmo() const { return Ammo; }
+	void DecrementAmmo();
 };

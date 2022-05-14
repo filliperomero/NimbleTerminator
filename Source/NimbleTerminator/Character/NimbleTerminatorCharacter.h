@@ -91,6 +91,7 @@ protected:
 	void SwapWeapon(AWeapon* WeaponToSwap);
 
 	void InitializeAmmoMap();
+	bool WeaponHasAmmo();
 	
 private:
 	// Camera boom positioning the camera behind the Character 

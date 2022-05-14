@@ -250,6 +250,8 @@ void ANimbleTerminatorCharacter::LookUp(float Value)
 
 void ANimbleTerminatorCharacter::FireButtonPressed()
 {
+	if (!WeaponHasAmmo()) return;
+	
 	bFireButtonPressed = true;
 	StartFireTimer();
 }
@@ -272,7 +274,7 @@ void ANimbleTerminatorCharacter::StartFireTimer()
 void ANimbleTerminatorCharacter::FireTimerFinished()
 {
 	bCanFire = true;
-	if (bFireButtonPressed)
+	if (bFireButtonPressed && WeaponHasAmmo())
 	{
 		StartFireTimer();
 	}
@@ -280,16 +282,18 @@ void ANimbleTerminatorCharacter::FireTimerFinished()
 
 void ANimbleTerminatorCharacter::FireWeapon()
 {
+	if (EquippedWeapon == nullptr) return;
+	
 	if (FireSound)
 	{
 		UGameplayStatics::PlaySound2D(this, FireSound);
 	}
 
-	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName(FName("BarrelSocket"));
+	const USkeletalMeshSocket* BarrelSocket = EquippedWeapon->GetItemMesh()->GetSocketByName(FName("BarrelSocket"));
 
 	if (BarrelSocket)
 	{
-		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
+		const FTransform SocketTransform = BarrelSocket->GetSocketTransform(EquippedWeapon->GetItemMesh());
 
 		UWorld* World = GetWorld();
 		if (World)
@@ -331,6 +335,8 @@ void ANimbleTerminatorCharacter::FireWeapon()
 	}
 
 	StartCrosshairBulletFire();
+
+	if (EquippedWeapon) EquippedWeapon->DecrementAmmo();
 }
 
 bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
@@ -526,5 +532,12 @@ void ANimbleTerminatorCharacter::InitializeAmmoMap()
 {
 	AmmoMap.Add(EAmmoType::EAT_9mm, Starting9mmAmmo);
 	AmmoMap.Add(EAmmoType::EAT_AR, StartingARAmmo);
+}
+
+bool ANimbleTerminatorCharacter::WeaponHasAmmo()
+{
+	if (EquippedWeapon == nullptr) return false;
+
+	return EquippedWeapon->GetAmmo() > 0;
 }
 

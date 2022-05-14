@@ -44,6 +44,17 @@ void AWeapon::ThrowWeapon()
 	}
 }
 
+void AWeapon::DecrementAmmo()
+{
+	if (Ammo - 1 <= 0)
+	{
+		Ammo = 0;
+		return;
+	}
+
+	--Ammo;
+}
+
 void AWeapon::StopFalling()
 {
 	bFalling = false;
