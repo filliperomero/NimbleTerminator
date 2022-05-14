@@ -186,6 +186,7 @@ void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	PlayerInputComponent->BindAction("AimingButton", IE_Released, this, &ThisClass::AimingButtonRelease);
 	PlayerInputComponent->BindAction("Select", IE_Pressed, this, &ThisClass::SelectButtonPressed);
 	PlayerInputComponent->BindAction("Select", IE_Released, this, &ThisClass::SelectButtonReleased);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ThisClass::ReloadButtonPressed);
 }
 
 void ANimbleTerminatorCharacter::MoveForward(float Value)
@@ -248,10 +249,71 @@ void ANimbleTerminatorCharacter::LookUp(float Value)
 	AddControllerPitchInput(Value * LookUpScaleFactor);
 }
 
+void ANimbleTerminatorCharacter::ReloadButtonPressed()
+{
+	ReloadWeapon();
+}
+
+void ANimbleTerminatorCharacter::ReloadWeapon()
+{
+	if (EquippedWeapon == nullptr || CombatState != ECombatState::ECS_Unoccupied || !HasCarriedAmmo()) return;
+
+	if (GetMesh())
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		
+		if (AnimInstance && ReloadMontage)
+		{
+			AnimInstance->Montage_Play(ReloadMontage);
+			AnimInstance->Montage_JumpToSection(EquippedWeapon->GetReloadMontageSection());
+			CombatState = ECombatState::ECS_Reloading;
+		} 
+	}
+}
+
+void ANimbleTerminatorCharacter::FinishReloading()
+{
+	CombatState = ECombatState::ECS_Unoccupied;
+
+	if (EquippedWeapon == nullptr) return;
+	const auto AmmoType = EquippedWeapon->GetAmmoType();
+
+	if (AmmoMap.Contains(AmmoType))
+	{
+		int32 CarriedAmmo = AmmoMap[AmmoType];
+		const int32 MagEmptySpace = EquippedWeapon->GetMagazineCapacity() - EquippedWeapon->GetAmmo();
+		
+		if (MagEmptySpace > CarriedAmmo)
+		{
+			EquippedWeapon->ReloadAmmo(CarriedAmmo);
+			CarriedAmmo = 0;
+		}
+		else
+		{
+			EquippedWeapon->ReloadAmmo(MagEmptySpace);
+			CarriedAmmo -= MagEmptySpace;
+		}
+
+		AmmoMap.Add(AmmoType, CarriedAmmo);
+	}
+}
+
+bool ANimbleTerminatorCharacter::HasCarriedAmmo()
+{
+	if (EquippedWeapon == nullptr) return false;
+
+	const auto AmmoType = EquippedWeapon->GetAmmoType();
+
+	if (AmmoMap.Contains(AmmoType))
+		return AmmoMap[AmmoType] > 0;
+
+	return false;
+}
+
 void ANimbleTerminatorCharacter::FireButtonPressed()
 {
-	bFireButtonPressed = true;
-	FireWeapon();
+bFireButtonPressed = true;
+FireWeapon();
 }
 
 void ANimbleTerminatorCharacter::FireButtonReleased()
@@ -276,7 +338,7 @@ void ANimbleTerminatorCharacter::FireTimerFinished()
 	}
 	else
 	{
-		// Reload
+		ReloadWeapon();
 	}
 }
 
@@ -551,4 +613,3 @@ bool ANimbleTerminatorCharacter::WeaponHasAmmo()
 
 	return EquippedWeapon->GetAmmo() > 0;
 }
-

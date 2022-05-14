@@ -4,18 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "NimbleTerminator/Weapon/AmmoType.h"
 #include "NimbleTerminatorCharacter.generated.h"
 
 #define TRACE_LENGTH 80'000.f
-
-UENUM(BlueprintType)
-enum class EAmmoType : uint8
-{
-	EAT_9mm UMETA(DisplayName = "9mm"),
-	EAT_AR UMETA(DisplayName = "Assault Rifle"),
-
-	EAT_MAX UMETA(DisplayName = "DefaultMax"),
-};
 
 UENUM()
 enum class ECombatState: uint8
@@ -66,7 +58,6 @@ protected:
 
 	// Called when the fire button is pressed
 	void FireWeapon();
-
 	void PlayFireSound();
 	void PlayGunfireMontage();
 	void SendBullet();
@@ -106,6 +97,14 @@ protected:
 
 	void InitializeAmmoMap();
 	bool WeaponHasAmmo();
+
+	void ReloadButtonPressed();
+	void ReloadWeapon();
+	
+	UFUNCTION(BlueprintCallable)
+	void FinishReloading();
+
+	bool HasCarriedAmmo();
 
 private:
 	// Camera boom positioning the camera behind the Character 
@@ -268,6 +267,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* ReloadMontage;
 	
 public:
 
