@@ -43,6 +43,8 @@ ANimbleTerminatorCharacter::ANimbleTerminatorCharacter() :
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f); // ... at this rotation rate
 	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
+
+	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
 }
 
 void ANimbleTerminatorCharacter::BeginPlay()
@@ -612,4 +614,23 @@ bool ANimbleTerminatorCharacter::WeaponHasAmmo()
 	if (EquippedWeapon == nullptr) return false;
 
 	return EquippedWeapon->GetAmmo() > 0;
+}
+
+void ANimbleTerminatorCharacter::GrabClip()
+{
+	if (EquippedWeapon == nullptr || HandSceneComponent == nullptr || EquippedWeapon->GetItemMesh() == nullptr) return;
+
+	const int32 ClipBoneIndex = EquippedWeapon->GetItemMesh()->GetBoneIndex(EquippedWeapon->GetClipBoneName());
+	ClipTransform = EquippedWeapon->GetItemMesh()->GetBoneTransform(ClipBoneIndex);
+
+	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepRelative, true);
+	HandSceneComponent->AttachToComponent(GetMesh(), AttachmentRules, FName(TEXT("Hand_L")));
+	HandSceneComponent->SetWorldTransform(ClipTransform);
+
+	EquippedWeapon->SetMovingClip(true);
+}
+
+void ANimbleTerminatorCharacter::ReleaseClip()
+{
+	EquippedWeapon->SetMovingClip(false);
 }
