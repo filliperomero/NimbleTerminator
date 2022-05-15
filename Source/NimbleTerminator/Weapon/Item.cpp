@@ -236,5 +236,6 @@ void AItem::FinishInterping()
 	if (Character == nullptr) return;
 	
 	Character->GetPickupItem(this);
+	// Set scale back to normal
 	SetActorScale3D(FVector(1.f));
 }
