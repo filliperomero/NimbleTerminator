@@ -6,6 +6,17 @@
 #include "Animation/AnimInstance.h"
 #include "NimbleTerminatorAnimInstance.generated.h"
 
+UENUM(BlueprintType)
+enum class EOffsetState : uint8
+{
+	EOS_Aiming UMETA(DisplayName = "Aiming"),
+	EOS_Hip UMETA(DisplayName = "Hip"),
+	EOS_Reloading UMETA(DisplayName = "Reloading"),
+	EOS_InAir UMETA(DisplayName = "In Air"),
+	
+	EOS_MAX UMETA(DisplayName = "DefaultMax")
+};
+
 /**
  * 
  */
@@ -69,4 +80,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn In Place", meta = (AllowPrivateAccess = "true"))
 	bool bReloading = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn In Place", meta = (AllowPrivateAccess = "true"))
+	EOffsetState OffsetState = EOffsetState::EOS_Hip;
 };

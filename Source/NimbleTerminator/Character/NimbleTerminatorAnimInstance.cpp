@@ -38,6 +38,11 @@ void UNimbleTerminatorAnimInstance::UpdateAnimationProperties(float DeltaTime)
 
 	bReloading = NimbleTerminatorCharacter->GetCombatState() == ECombatState::ECS_Reloading;
 
+	if (bReloading) OffsetState = EOffsetState::EOS_Reloading;
+	else if (bIsInAir) OffsetState = EOffsetState::EOS_InAir;
+	else if (bAiming) OffsetState = EOffsetState::EOS_Aiming;
+	else OffsetState = EOffsetState::EOS_Hip;
+
 	TurnInPlace();
 }
 
@@ -54,7 +59,7 @@ void UNimbleTerminatorAnimInstance::TurnInPlace()
 
 	Pitch = NimbleTerminatorCharacter->GetBaseAimRotation().Pitch;
 
-	if (Speed > 0.f)
+	if (Speed > 0.f || bIsInAir)
 	{
 		RootYawOffset = 0.f;
 		CharacterYaw = NimbleTerminatorCharacter->GetActorRotation().Yaw;
