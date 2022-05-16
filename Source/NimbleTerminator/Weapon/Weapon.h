@@ -72,4 +72,5 @@ public:
 	FORCEINLINE void SetMovingClip(const bool Move) { bMovingClip = Move; }
 
 	void ReloadAmmo(int32 Amount);
+	bool IsClipFull() const;
 };

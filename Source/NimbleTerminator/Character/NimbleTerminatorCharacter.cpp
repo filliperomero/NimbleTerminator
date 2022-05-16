@@ -258,7 +258,11 @@ void ANimbleTerminatorCharacter::ReloadButtonPressed()
 
 void ANimbleTerminatorCharacter::ReloadWeapon()
 {
-	if (EquippedWeapon == nullptr || CombatState != ECombatState::ECS_Unoccupied || !HasCarriedAmmo()) return;
+	if (EquippedWeapon == nullptr ||
+		CombatState != ECombatState::ECS_Unoccupied ||
+		!HasCarriedAmmo() ||
+		EquippedWeapon->IsClipFull())
+			return;
 
 	if (GetMesh())
 	{
