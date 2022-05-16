@@ -36,6 +36,8 @@ void UNimbleTerminatorAnimInstance::UpdateAnimationProperties(float DeltaTime)
 
 	bAiming = NimbleTerminatorCharacter->GetAiming();
 
+	bReloading = NimbleTerminatorCharacter->GetCombatState() == ECombatState::ECS_Reloading;
+
 	TurnInPlace();
 }
 
@@ -49,6 +51,8 @@ void UNimbleTerminatorAnimInstance::NativeInitializeAnimation()
 void UNimbleTerminatorAnimInstance::TurnInPlace()
 {
 	if (NimbleTerminatorCharacter == nullptr) return;
+
+	Pitch = NimbleTerminatorCharacter->GetBaseAimRotation().Pitch;
 
 	if (Speed > 0.f)
 	{
