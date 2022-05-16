@@ -35,6 +35,8 @@ void UNimbleTerminatorAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		LastMovementOffsetYaw = MovementOffsetYaw;
 
 	bAiming = NimbleTerminatorCharacter->GetAiming();
+
+	TurnInPlace();
 }
 
 void UNimbleTerminatorAnimInstance::NativeInitializeAnimation()
@@ -42,4 +44,49 @@ void UNimbleTerminatorAnimInstance::NativeInitializeAnimation()
 	Super::NativeInitializeAnimation();
 
 	NimbleTerminatorCharacter = Cast<ANimbleTerminatorCharacter>(TryGetPawnOwner());
+}
+
+void UNimbleTerminatorAnimInstance::TurnInPlace()
+{
+	if (NimbleTerminatorCharacter == nullptr) return;
+
+	if (Speed > 0.f)
+	{
+		RootYawOffset = 0.f;
+		CharacterYaw = NimbleTerminatorCharacter->GetActorRotation().Yaw;
+		CharacterYawLastFrame = CharacterYaw;
+		RotationCurve = 0.f;
+		RotationCurveLastFrame = 0.f;
+
+		return;
+	}
+
+	CharacterYawLastFrame = CharacterYaw;
+	CharacterYaw = NimbleTerminatorCharacter->GetActorRotation().Yaw;
+	// Difference between CharacterYaw and CharacterYawLastFrame
+	const float YawDelta = CharacterYaw - CharacterYawLastFrame;
+
+	// Root Yaw offset, updated and clamped to [-180, 180]
+	RootYawOffset = UKismetMathLibrary::NormalizeAxis(RootYawOffset - YawDelta);
+
+	// 1.0 if turning, 0.0 if not (Curve created in the turning animations)
+	const float Turning = GetCurveValue(TEXT("Turning"));
+	if (Turning > 0.f)
+	{
+		RotationCurveLastFrame = RotationCurve;
+		RotationCurve = GetCurveValue(TEXT("Rotation"));
+
+		const float DeltaRotation = RotationCurve - RotationCurveLastFrame;
+
+		// RootYawOffset > 0 -> Turning Left, RootYawOffset < 0 -> Turning Right
+		RootYawOffset > 0.f ? RootYawOffset -= DeltaRotation : RootYawOffset += DeltaRotation;
+
+		const float ABSRootYawOffset = FMath::Abs(RootYawOffset);
+		if (ABSRootYawOffset > 90.f)
+		{
+			// Compensate the value by subtracting or adding the excess
+			const float YawExcess = ABSRootYawOffset - 90.f;
+			RootYawOffset > 0.f ? RootYawOffset -= YawExcess : RootYawOffset += YawExcess;
+		}
+	}
 }
