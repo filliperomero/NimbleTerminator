@@ -44,6 +44,7 @@ void UNimbleTerminatorAnimInstance::UpdateAnimationProperties(float DeltaTime)
 	else OffsetState = EOffsetState::EOS_Hip;
 
 	TurnInPlace();
+	Lean(DeltaTime);
 }
 
 void UNimbleTerminatorAnimInstance::NativeInitializeAnimation()
@@ -62,21 +63,21 @@ void UNimbleTerminatorAnimInstance::TurnInPlace()
 	if (Speed > 0.f || bIsInAir)
 	{
 		RootYawOffset = 0.f;
-		CharacterYaw = NimbleTerminatorCharacter->GetActorRotation().Yaw;
-		CharacterYawLastFrame = CharacterYaw;
+		TIPCharacterYaw = NimbleTerminatorCharacter->GetActorRotation().Yaw;
+		TIPCharacterYawLastFrame = TIPCharacterYaw;
 		RotationCurve = 0.f;
 		RotationCurveLastFrame = 0.f;
 
 		return;
 	}
 
-	CharacterYawLastFrame = CharacterYaw;
-	CharacterYaw = NimbleTerminatorCharacter->GetActorRotation().Yaw;
+	TIPCharacterYawLastFrame = TIPCharacterYaw;
+	TIPCharacterYaw = NimbleTerminatorCharacter->GetActorRotation().Yaw;
 	// Difference between CharacterYaw and CharacterYawLastFrame
-	const float YawDelta = CharacterYaw - CharacterYawLastFrame;
+	const float TIPYawDelta = TIPCharacterYaw - TIPCharacterYawLastFrame;
 
 	// Root Yaw offset, updated and clamped to [-180, 180]
-	RootYawOffset = UKismetMathLibrary::NormalizeAxis(RootYawOffset - YawDelta);
+	RootYawOffset = UKismetMathLibrary::NormalizeAxis(RootYawOffset - TIPYawDelta);
 
 	// 1.0 if turning, 0.0 if not (Curve created in the turning animations)
 	const float Turning = GetCurveValue(TEXT("Turning"));
@@ -98,4 +99,19 @@ void UNimbleTerminatorAnimInstance::TurnInPlace()
 			RootYawOffset > 0.f ? RootYawOffset -= YawExcess : RootYawOffset += YawExcess;
 		}
 	}
+}
+
+void UNimbleTerminatorAnimInstance::Lean(float DeltaTime)
+{
+	if (NimbleTerminatorCharacter == nullptr) return;
+
+	CharacterRotationLastFrame = CharacterRotation;
+	CharacterRotation = NimbleTerminatorCharacter->GetActorRotation();
+
+	const FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotation, CharacterRotationLastFrame);
+	
+	const float Target = Delta.Yaw / DeltaTime;
+	const float Interp = FMath::FInterpTo(YawDelta, Target, DeltaTime, 6.f);
+
+	YawDelta = FMath::Clamp(Interp, -90.f, 90.f);
 }
