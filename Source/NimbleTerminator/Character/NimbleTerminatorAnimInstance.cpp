@@ -38,6 +38,8 @@ void UNimbleTerminatorAnimInstance::UpdateAnimationProperties(float DeltaTime)
 
 	bReloading = NimbleTerminatorCharacter->GetCombatState() == ECombatState::ECS_Reloading;
 
+	bCrouching = NimbleTerminatorCharacter->IsCrouching();
+
 	if (bReloading) OffsetState = EOffsetState::EOS_Reloading;
 	else if (bIsInAir) OffsetState = EOffsetState::EOS_InAir;
 	else if (bAiming) OffsetState = EOffsetState::EOS_Aiming;
@@ -67,36 +69,65 @@ void UNimbleTerminatorAnimInstance::TurnInPlace()
 		TIPCharacterYawLastFrame = TIPCharacterYaw;
 		RotationCurve = 0.f;
 		RotationCurveLastFrame = 0.f;
+	}
+	else
+	{
+		TIPCharacterYawLastFrame = TIPCharacterYaw;
+		TIPCharacterYaw = NimbleTerminatorCharacter->GetActorRotation().Yaw;
+		// Difference between CharacterYaw and CharacterYawLastFrame
+		const float TIPYawDelta = TIPCharacterYaw - TIPCharacterYawLastFrame;
 
-		return;
+		// Root Yaw offset, updated and clamped to [-180, 180]
+		RootYawOffset = UKismetMathLibrary::NormalizeAxis(RootYawOffset - TIPYawDelta);
+
+		// 1.0 if turning, 0.0 if not (Curve created in the turning animations)
+		const float Turning = GetCurveValue(TEXT("Turning"));
+		if (Turning > 0.f)
+		{
+			bTurningInPlace = true;
+			RotationCurveLastFrame = RotationCurve;
+			RotationCurve = GetCurveValue(TEXT("Rotation"));
+
+			const float DeltaRotation = RotationCurve - RotationCurveLastFrame;
+
+			// RootYawOffset > 0 -> Turning Left, RootYawOffset < 0 -> Turning Right
+			RootYawOffset > 0.f ? RootYawOffset -= DeltaRotation : RootYawOffset += DeltaRotation;
+
+			const float ABSRootYawOffset = FMath::Abs(RootYawOffset);
+			if (ABSRootYawOffset > 90.f)
+			{
+				// Compensate the value by subtracting or adding the excess
+				const float YawExcess = ABSRootYawOffset - 90.f;
+				RootYawOffset > 0.f ? RootYawOffset -= YawExcess : RootYawOffset += YawExcess;
+			}
+		}
+		else
+			bTurningInPlace = false;
 	}
 
-	TIPCharacterYawLastFrame = TIPCharacterYaw;
-	TIPCharacterYaw = NimbleTerminatorCharacter->GetActorRotation().Yaw;
-	// Difference between CharacterYaw and CharacterYawLastFrame
-	const float TIPYawDelta = TIPCharacterYaw - TIPCharacterYawLastFrame;
 
-	// Root Yaw offset, updated and clamped to [-180, 180]
-	RootYawOffset = UKismetMathLibrary::NormalizeAxis(RootYawOffset - TIPYawDelta);
-
-	// 1.0 if turning, 0.0 if not (Curve created in the turning animations)
-	const float Turning = GetCurveValue(TEXT("Turning"));
-	if (Turning > 0.f)
+	if (bTurningInPlace)
 	{
-		RotationCurveLastFrame = RotationCurve;
-		RotationCurve = GetCurveValue(TEXT("Rotation"));
-
-		const float DeltaRotation = RotationCurve - RotationCurveLastFrame;
-
-		// RootYawOffset > 0 -> Turning Left, RootYawOffset < 0 -> Turning Right
-		RootYawOffset > 0.f ? RootYawOffset -= DeltaRotation : RootYawOffset += DeltaRotation;
-
-		const float ABSRootYawOffset = FMath::Abs(RootYawOffset);
-		if (ABSRootYawOffset > 90.f)
+		if (bReloading)
+			RecoilWeight = 1.f;
+		else
+			RecoilWeight = 0.f;
+	}
+	else
+	{
+		if (bCrouching)
 		{
-			// Compensate the value by subtracting or adding the excess
-			const float YawExcess = ABSRootYawOffset - 90.f;
-			RootYawOffset > 0.f ? RootYawOffset -= YawExcess : RootYawOffset += YawExcess;
+			if (bReloading)
+				RecoilWeight = 1.f;
+			else
+				RecoilWeight = 0.1f;
+		}
+		else
+		{
+			if (bAiming || bReloading)
+				RecoilWeight = 1.f;
+			else
+				RecoilWeight = 0.5f;
 		}
 	}
 }

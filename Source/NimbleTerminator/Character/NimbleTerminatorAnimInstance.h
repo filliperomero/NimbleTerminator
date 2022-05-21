@@ -85,6 +85,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn In Place", meta = (AllowPrivateAccess = "true"))
 	EOffsetState OffsetState = EOffsetState::EOS_Hip;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Turn In Place", meta = (AllowPrivateAccess = "true"))
+	bool bTurningInPlace = false;
+
 	/**
 	 * Lean
 	 */
@@ -96,6 +99,12 @@ private:
 	FRotator CharacterRotationLastFrame = FRotator(0.f);
 
 	// Yaw delta used for leaning in the running blendspace
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Lean", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Lean, meta = (AllowPrivateAccess = "true"))
 	float YawDelta = 0.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crouch, meta = (AllowPrivateAccess = "true"))
+	bool bCrouching = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float RecoilWeight = 1.f;
 };

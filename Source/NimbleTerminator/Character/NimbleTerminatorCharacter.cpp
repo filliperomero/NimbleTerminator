@@ -4,6 +4,7 @@
 #include "NimbleTerminatorCharacter.h"
 
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -26,7 +27,7 @@ ANimbleTerminatorCharacter::ANimbleTerminatorCharacter() :
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 180.f;
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-	CameraBoom->SocketOffset = FVector(0.f, 50.f, 75.f);
+	CameraBoom->SocketOffset = FVector(0.f, 50.f, 45.f);
 
 	// Create a Follow Camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -59,6 +60,8 @@ void ANimbleTerminatorCharacter::BeginPlay()
 	
 	EquipWeapon(SpawnDefaultWeapon());
 	InitializeAmmoMap();
+
+	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
 }
 
 void ANimbleTerminatorCharacter::Tick(float DeltaTime)
@@ -69,6 +72,8 @@ void ANimbleTerminatorCharacter::Tick(float DeltaTime)
 	SetLookRates();
 	CalculateCrosshairSpread(DeltaTime);
 	TraceForItems();
+	// Interpolate the capsule half height based on crouching/standing
+	// InterpCapsuleHalfHeight(DeltaTime);
 }
 
 void ANimbleTerminatorCharacter::InterpFOV(float DeltaTime)
@@ -88,6 +93,19 @@ void ANimbleTerminatorCharacter::InterpFOV(float DeltaTime)
 	{
 		GetFollowCamera()->SetFieldOfView(CameraCurrentFOV);
 	}
+}
+
+void ANimbleTerminatorCharacter::InterpCapsuleHalfHeight(float DeltaTime)
+{
+	const float TargetCapsuleHalfHeight = bCrouching ? CrouchingCapsuleHalfHeight : StandingCapsuleHalfHeight;
+	const float InterpHalfHeight = FMath::FInterpTo(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), TargetCapsuleHalfHeight, DeltaTime, 20.f);
+
+	// Negative value if crouching and positive value if standing
+	const float DeltaCapsuleHalfHeight = InterpHalfHeight - GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	const FVector MeshOffset(0.f, 0.f, -DeltaCapsuleHalfHeight);
+
+	GetMesh()->AddLocalOffset(MeshOffset);
+	GetCapsuleComponent()->SetCapsuleHalfHeight(InterpHalfHeight, true);
 }
 
 void ANimbleTerminatorCharacter::SetLookRates()
@@ -180,7 +198,7 @@ void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	PlayerInputComponent->BindAxis("Turn", this, &ThisClass::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &ThisClass::LookUp);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ThisClass::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &ThisClass::FireButtonPressed);
 	PlayerInputComponent->BindAction("FireButton", IE_Released, this, &ThisClass::FireButtonReleased);
@@ -189,6 +207,7 @@ void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	PlayerInputComponent->BindAction("Select", IE_Pressed, this, &ThisClass::SelectButtonPressed);
 	PlayerInputComponent->BindAction("Select", IE_Released, this, &ThisClass::SelectButtonReleased);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ThisClass::ReloadButtonPressed);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ThisClass::CrouchButtonPressed);
 }
 
 void ANimbleTerminatorCharacter::MoveForward(float Value)
@@ -643,4 +662,34 @@ void ANimbleTerminatorCharacter::GrabClip()
 void ANimbleTerminatorCharacter::ReleaseClip()
 {
 	EquippedWeapon->SetMovingClip(false);
+}
+
+void ANimbleTerminatorCharacter::CrouchButtonPressed()
+{
+	if (!GetCharacterMovement()->IsFalling())
+	{
+		bCrouching = !bCrouching;
+	}
+
+	if (bCrouching)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = CrouchMovementSpeed;
+		GetCharacterMovement()->GroundFriction = CrouchingGroundFriction;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+		GetCharacterMovement()->GroundFriction = BaseGroundFriction;
+	}
+}
+
+void ANimbleTerminatorCharacter::Jump()
+{
+	if (bCrouching)
+	{
+		bCrouching = false;
+		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+	}
+	else
+		Super::Jump();
 }
