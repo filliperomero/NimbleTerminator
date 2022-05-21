@@ -145,7 +145,7 @@ private:
 	float MouseHipTurnRate = 1.f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
-	float MouseAimingTurnRate = 0.2f;
+	float MouseAimingTurnRate = 0.6f;
 
 	// Base look up/down rate, in deg/sec. Other scaling may affect final turn rate
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -163,7 +163,7 @@ private:
 	float MouseLookUpRate = 1.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
-	float MouseAimingLookUpRate = 0.2f;
+	float MouseAimingLookUpRate = 0.6f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class USoundCue* FireSound;
@@ -197,7 +197,7 @@ private:
 	float ZoomInterpSpeed = 20.f;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	float CameraZoomedFOV = 30.f;
+	float CameraZoomedFOV = 25.f;
 
 	/**
 	 * Crosshair
