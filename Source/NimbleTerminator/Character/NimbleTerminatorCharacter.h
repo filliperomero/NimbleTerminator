@@ -67,6 +67,8 @@ protected:
 	// Set bAiming to true/false with button press
 	void AimingButtonPressed();
 	void AimingButtonRelease();
+	void Aim();
+	void StopAiming();
 
 	void InterpFOV(float DeltaTime);
 
@@ -189,6 +191,8 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	bool bAiming = false;
+
+	bool bAimingButtonPressed = false;
 
 	float CameraDefaultFOV = 0.f;
 	float CameraCurrentFOV = 0.f;

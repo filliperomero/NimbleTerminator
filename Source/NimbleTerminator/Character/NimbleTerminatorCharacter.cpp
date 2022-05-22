@@ -277,11 +277,14 @@ void ANimbleTerminatorCharacter::ReloadButtonPressed()
 
 void ANimbleTerminatorCharacter::ReloadWeapon()
 {
-	if (EquippedWeapon == nullptr ||
-		CombatState != ECombatState::ECS_Unoccupied ||
-		!HasCarriedAmmo() ||
-		EquippedWeapon->IsClipFull())
+	if (EquippedWeapon == nullptr
+		|| CombatState != ECombatState::ECS_Unoccupied
+		|| !HasCarriedAmmo()
+		|| EquippedWeapon->IsClipFull())
 			return;
+
+	if (bAiming)
+		StopAiming();
 
 	if (GetMesh())
 	{
@@ -299,6 +302,9 @@ void ANimbleTerminatorCharacter::ReloadWeapon()
 void ANimbleTerminatorCharacter::FinishReloading()
 {
 	CombatState = ECombatState::ECS_Unoccupied;
+
+	if (bAimingButtonPressed)
+		Aim();
 
 	if (EquippedWeapon == nullptr) return;
 	const auto AmmoType = EquippedWeapon->GetAmmoType();
@@ -479,11 +485,24 @@ void ANimbleTerminatorCharacter::FinishCrosshairBulletFire()
 
 void ANimbleTerminatorCharacter::AimingButtonPressed()
 {
+	bAimingButtonPressed = true;
+	if (CombatState != ECombatState::ECS_Reloading)
+		Aim();
+}
+
+void ANimbleTerminatorCharacter::AimingButtonRelease()
+{
+	bAimingButtonPressed = false;
+	StopAiming();
+}
+
+void ANimbleTerminatorCharacter::Aim()
+{
 	bAiming = true;
 	GetCharacterMovement()->MaxWalkSpeed = CrouchMovementSpeed;
 }
 
-void ANimbleTerminatorCharacter::AimingButtonRelease()
+void ANimbleTerminatorCharacter::StopAiming()
 {
 	bAiming = false;
 	if (!bCrouching)
