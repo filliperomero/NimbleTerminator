@@ -480,11 +480,14 @@ void ANimbleTerminatorCharacter::FinishCrosshairBulletFire()
 void ANimbleTerminatorCharacter::AimingButtonPressed()
 {
 	bAiming = true;
+	GetCharacterMovement()->MaxWalkSpeed = CrouchMovementSpeed;
 }
 
 void ANimbleTerminatorCharacter::AimingButtonRelease()
 {
 	bAiming = false;
+	if (!bCrouching)
+		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
 }
 
 bool ANimbleTerminatorCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)
