@@ -61,7 +61,7 @@ protected:
 	);
 	
 	void SetActiveStars();
-	void SetItemProperties(const EItemState State);
+	virtual void SetItemProperties(const EItemState State);
 
 	void FinishInterping();
 	void ItemInterp(float DeltaTime);
@@ -142,4 +142,5 @@ public:
 	void StartItemCurve(ANimbleTerminatorCharacter* Char);
 	FORCEINLINE USoundCue* GetPickupSound() const { return PickupSound; }
 	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
+	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 };

@@ -122,6 +122,8 @@ protected:
 	
 	virtual void Jump() override;
 
+	void PickupAmmo(class AAmmo* Ammo);	
+
 private:
 	// Camera boom positioning the camera behind the Character 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))

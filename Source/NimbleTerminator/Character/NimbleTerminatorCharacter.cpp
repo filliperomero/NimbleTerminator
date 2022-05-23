@@ -1,4 +1,4 @@
-	// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "NimbleTerminatorCharacter.h"
@@ -15,6 +15,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "Components/WidgetComponent.h"
+#include "NimbleTerminator/Weapon/Ammo.h"
 
 ANimbleTerminatorCharacter::ANimbleTerminatorCharacter() :
 	BaseTurnRate(45.f),
@@ -57,7 +58,7 @@ void ANimbleTerminatorCharacter::BeginPlay()
 		CameraDefaultFOV = GetFollowCamera()->FieldOfView;
 		CameraCurrentFOV = CameraDefaultFOV;
 	}
-	
+
 	EquipWeapon(SpawnDefaultWeapon());
 	InitializeAmmoMap();
 
@@ -88,7 +89,7 @@ void ANimbleTerminatorCharacter::InterpFOV(float DeltaTime)
 		// Interpolate to Default FOV
 		CameraCurrentFOV = FMath::FInterpTo(CameraCurrentFOV, CameraDefaultFOV, DeltaTime, ZoomInterpSpeed);
 	}
-	
+
 	if (GetFollowCamera())
 	{
 		GetFollowCamera()->SetFieldOfView(CameraCurrentFOV);
@@ -98,7 +99,8 @@ void ANimbleTerminatorCharacter::InterpFOV(float DeltaTime)
 void ANimbleTerminatorCharacter::InterpCapsuleHalfHeight(float DeltaTime)
 {
 	const float TargetCapsuleHalfHeight = bCrouching ? CrouchingCapsuleHalfHeight : StandingCapsuleHalfHeight;
-	const float InterpHalfHeight = FMath::FInterpTo(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), TargetCapsuleHalfHeight, DeltaTime, 20.f);
+	const float InterpHalfHeight = FMath::FInterpTo(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
+	                                                TargetCapsuleHalfHeight, DeltaTime, 20.f);
 
 	// Negative value if crouching and positive value if standing
 	const float DeltaCapsuleHalfHeight = InterpHalfHeight - GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
@@ -130,20 +132,21 @@ void ANimbleTerminatorCharacter::CalculateCrosshairSpread(float DeltaTime)
 	FVector Velocity = GetVelocity();
 	Velocity.Z = 0.f;
 
-	CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+	CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange,
+	                                                            Velocity.Size());
 
 	CrosshairInAirFactor = GetCharacterMovement()->IsFalling()
-		? FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f)
-		: FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
+		                       ? FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f)
+		                       : FMath::FInterpTo(CrosshairInAirFactor, 0.f, DeltaTime, 30.f);
 
 	CrosshairAimFactor = bAiming
-		? FMath::FInterpTo(CrosshairAimFactor, 0.4f, DeltaTime, 30.f)
-		: FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
-	
+		                     ? FMath::FInterpTo(CrosshairAimFactor, 0.4f, DeltaTime, 30.f)
+		                     : FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
+
 	CrosshairShootingFactor = bFiringBullet
-		? FMath::FInterpTo(CrosshairShootingFactor, 0.3f, DeltaTime, 60.f)
-		: FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 60.f);
-	
+		                          ? FMath::FInterpTo(CrosshairShootingFactor, 0.3f, DeltaTime, 60.f)
+		                          : FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 60.f);
+
 	CrosshairSpreadMultiplier = 0.5f
 		+ CrosshairVelocityFactor
 		+ CrosshairInAirFactor
@@ -163,12 +166,16 @@ void ANimbleTerminatorCharacter::TraceForItems()
 		{
 			TraceHitItem = Cast<AItem>(ItemTraceResult.GetActor());
 			if (TraceHitItem && TraceHitItem->GetPickupWidget())
+			{
 				TraceHitItem->GetPickupWidget()->SetVisibility(true);
-			
+			}
+
 			// We are hitting a different AItem this frame from last frame or AItem is null
 			if (TraceHitItemLastFrame && TraceHitItemLastFrame != TraceHitItem)
+			{
 				TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
-			
+			}
+
 			TraceHitItemLastFrame = TraceHitItem;
 		}
 	}
@@ -212,18 +219,24 @@ void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* Play
 
 void ANimbleTerminatorCharacter::MoveForward(float Value)
 {
-	if (Controller == nullptr || Value == 0.f) return;
-	
-	const FRotator Rotation{ Controller->GetControlRotation() };
-	const FRotator YawRotation{ 0.f, Rotation.Yaw, 0.f };
-	const FVector Direction{ FRotationMatrix{ YawRotation }.GetUnitAxis(EAxis::X) };
-	
+	if (Controller == nullptr || Value == 0.f)
+	{
+		return;
+	}
+
+	const FRotator Rotation{Controller->GetControlRotation()};
+	const FRotator YawRotation{0.f, Rotation.Yaw, 0.f};
+	const FVector Direction{FRotationMatrix{YawRotation}.GetUnitAxis(EAxis::X)};
+
 	AddMovementInput(Direction, Value);
 }
 
 void ANimbleTerminatorCharacter::MoveRight(float Value)
 {
-	if (Controller == nullptr || Value == 0.f) return;
+	if (Controller == nullptr || Value == 0.f)
+	{
+		return;
+	}
 
 	const FRotator YawRotation(0.f, Controller->GetControlRotation().Yaw, 0.f);
 	const FVector Direction(FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y));
@@ -281,21 +294,25 @@ void ANimbleTerminatorCharacter::ReloadWeapon()
 		|| CombatState != ECombatState::ECS_Unoccupied
 		|| !HasCarriedAmmo()
 		|| EquippedWeapon->IsClipFull())
-			return;
+	{
+		return;
+	}
 
 	if (bAiming)
+	{
 		StopAiming();
+	}
 
 	if (GetMesh())
 	{
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-		
+
 		if (AnimInstance && ReloadMontage)
 		{
 			AnimInstance->Montage_Play(ReloadMontage);
 			AnimInstance->Montage_JumpToSection(EquippedWeapon->GetReloadMontageSection());
 			CombatState = ECombatState::ECS_Reloading;
-		} 
+		}
 	}
 }
 
@@ -304,16 +321,21 @@ void ANimbleTerminatorCharacter::FinishReloading()
 	CombatState = ECombatState::ECS_Unoccupied;
 
 	if (bAimingButtonPressed)
+	{
 		Aim();
+	}
 
-	if (EquippedWeapon == nullptr) return;
+	if (EquippedWeapon == nullptr)
+	{
+		return;
+	}
 	const auto AmmoType = EquippedWeapon->GetAmmoType();
 
 	if (AmmoMap.Contains(AmmoType))
 	{
 		int32 CarriedAmmo = AmmoMap[AmmoType];
 		const int32 MagEmptySpace = EquippedWeapon->GetMagazineCapacity() - EquippedWeapon->GetAmmo();
-		
+
 		if (MagEmptySpace > CarriedAmmo)
 		{
 			EquippedWeapon->ReloadAmmo(CarriedAmmo);
@@ -331,20 +353,25 @@ void ANimbleTerminatorCharacter::FinishReloading()
 
 bool ANimbleTerminatorCharacter::HasCarriedAmmo()
 {
-	if (EquippedWeapon == nullptr) return false;
+	if (EquippedWeapon == nullptr)
+	{
+		return false;
+	}
 
 	const auto AmmoType = EquippedWeapon->GetAmmoType();
 
 	if (AmmoMap.Contains(AmmoType))
+	{
 		return AmmoMap[AmmoType] > 0;
+	}
 
 	return false;
 }
 
 void ANimbleTerminatorCharacter::FireButtonPressed()
 {
-bFireButtonPressed = true;
-FireWeapon();
+	bFireButtonPressed = true;
+	FireWeapon();
 }
 
 void ANimbleTerminatorCharacter::FireButtonReleased()
@@ -365,7 +392,9 @@ void ANimbleTerminatorCharacter::FireTimerFinished()
 	if (WeaponHasAmmo())
 	{
 		if (bFireButtonPressed)
+		{
 			FireWeapon();
+		}
 	}
 	else
 	{
@@ -375,8 +404,11 @@ void ANimbleTerminatorCharacter::FireTimerFinished()
 
 void ANimbleTerminatorCharacter::FireWeapon()
 {
-	if (EquippedWeapon == nullptr || CombatState != ECombatState::ECS_Unoccupied || !WeaponHasAmmo()) return;
-	
+	if (EquippedWeapon == nullptr || CombatState != ECombatState::ECS_Unoccupied || !WeaponHasAmmo())
+	{
+		return;
+	}
+
 	PlayFireSound();
 	SendBullet();
 	PlayGunfireMontage();
@@ -401,9 +433,9 @@ bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketL
 	const FVector WeaponTraceStart(MuzzleSocketLocation);
 	const FVector StartToEnd(OutBeamLocation - MuzzleSocketLocation);
 	// Increase by 25%
-	const FVector WeaponTraceEnd(MuzzleSocketLocation + StartToEnd * 1.25f );
+	const FVector WeaponTraceEnd(MuzzleSocketLocation + StartToEnd * 1.25f);
 
-	GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd, ECollisionChannel::ECC_Visibility);
+	GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd, ECC_Visibility);
 
 	// Object between barrel and BeamEndPOint
 	if (WeaponTraceHit.bBlockingHit)
@@ -418,7 +450,9 @@ bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketL
 void ANimbleTerminatorCharacter::PlayFireSound()
 {
 	if (FireSound)
+	{
 		UGameplayStatics::PlaySound2D(this, FireSound);
+	}
 }
 
 void ANimbleTerminatorCharacter::PlayGunfireMontage()
@@ -460,8 +494,9 @@ void ANimbleTerminatorCharacter::SendBullet()
 
 				if (BeamParticles)
 				{
-					UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(World, BeamParticles, SocketTransform);
-			
+					UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+						World, BeamParticles, SocketTransform);
+
 					if (Beam)
 					{
 						Beam->SetVectorParameter(FName("Target"), BeamEnd);
@@ -475,7 +510,8 @@ void ANimbleTerminatorCharacter::SendBullet()
 void ANimbleTerminatorCharacter::StartCrosshairBulletFire()
 {
 	bFiringBullet = true;
-	GetWorldTimerManager().SetTimer(CrosshairShootTimer, this, &ThisClass::FinishCrosshairBulletFire, ShootTimeDuration);
+	GetWorldTimerManager().SetTimer(CrosshairShootTimer, this, &ThisClass::FinishCrosshairBulletFire,
+	                                ShootTimeDuration);
 }
 
 void ANimbleTerminatorCharacter::FinishCrosshairBulletFire()
@@ -487,7 +523,9 @@ void ANimbleTerminatorCharacter::AimingButtonPressed()
 {
 	bAimingButtonPressed = true;
 	if (CombatState != ECombatState::ECS_Reloading)
+	{
 		Aim();
+	}
 }
 
 void ANimbleTerminatorCharacter::AimingButtonRelease()
@@ -506,7 +544,9 @@ void ANimbleTerminatorCharacter::StopAiming()
 {
 	bAiming = false;
 	if (!bCrouching)
+	{
 		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+	}
 }
 
 bool ANimbleTerminatorCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)
@@ -514,7 +554,9 @@ bool ANimbleTerminatorCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, 
 	// Get current size of the viewport
 	FVector2D ViewportSize;
 	if (GEngine && GEngine->GameViewport)
+	{
 		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
 
 	// Get screen space location of crosshairs
 	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
@@ -538,7 +580,7 @@ bool ANimbleTerminatorCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, 
 		const FVector End(Start + CrosshairWorldDirection * TRACE_LENGTH);
 		OutHitLocation = End;
 
-		GetWorld()->LineTraceSingleByChannel(OutHitResult, Start, End, ECollisionChannel::ECC_Visibility);
+		GetWorld()->LineTraceSingleByChannel(OutHitResult, Start, End, ECC_Visibility);
 
 		if (OutHitResult.bBlockingHit)
 		{
@@ -577,20 +619,28 @@ AWeapon* ANimbleTerminatorCharacter::SpawnDefaultWeapon()
 
 void ANimbleTerminatorCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 {
-	if (WeaponToEquip == nullptr) return;
-		
+	if (WeaponToEquip == nullptr)
+	{
+		return;
+	}
+
 	const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
 
 	if (HandSocket)
+	{
 		HandSocket->AttachActor(WeaponToEquip, GetMesh());
-	
+	}
+
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
 }
 
 void ANimbleTerminatorCharacter::DropWeapon()
 {
-	if (EquippedWeapon == nullptr) return;
+	if (EquippedWeapon == nullptr)
+	{
+		return;
+	}
 
 	if (EquippedWeapon->GetItemMesh())
 	{
@@ -610,15 +660,16 @@ void ANimbleTerminatorCharacter::SelectButtonPressed()
 		// const auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
 		// SwapWeapon(TraceHitWeapon);
 		TraceHitItem->StartItemCurve(this);
-		
+
 		if (TraceHitItem->GetPickupSound())
+		{
 			UGameplayStatics::PlaySound2D(this, TraceHitItem->GetPickupSound());
+		}
 	}
 	else
 	{
 		DropWeapon();
 	}
-	
 }
 
 void ANimbleTerminatorCharacter::SelectButtonReleased()
@@ -635,8 +686,11 @@ void ANimbleTerminatorCharacter::SwapWeapon(AWeapon* WeaponToSwap)
 
 FVector ANimbleTerminatorCharacter::GetCameraInterpLocation()
 {
-	if (FollowCamera == nullptr) return FVector(0.f, 0.f, 0.f);
-	
+	if (FollowCamera == nullptr)
+	{
+		return FVector(0.f, 0.f, 0.f);
+	}
+
 	const FVector CameraWorldLocation(FollowCamera->GetComponentLocation());
 	const FVector CameraForward(FollowCamera->GetForwardVector());
 
@@ -646,12 +700,40 @@ FVector ANimbleTerminatorCharacter::GetCameraInterpLocation()
 void ANimbleTerminatorCharacter::GetPickupItem(AItem* Item)
 {
 	if (Item->GetEquipSound())
+	{
 		UGameplayStatics::PlaySound2D(this, Item->GetEquipSound());
+	}
 
 	auto Weapon = Cast<AWeapon>(Item);
 
 	if (Weapon)
+	{
 		SwapWeapon(Weapon);
+	}
+
+	auto Ammo = Cast<AAmmo>(Item);
+
+	if (Ammo)
+	{
+		PickupAmmo(Ammo);
+	}
+}
+
+void ANimbleTerminatorCharacter::PickupAmmo(AAmmo* Ammo)
+{
+	if (AmmoMap.Find(Ammo->GetAmmoType()))
+	{
+		int32 AmmoCount = AmmoMap[Ammo->GetAmmoType()];
+		AmmoCount += Ammo->GetItemCount();
+		AmmoMap.Add(Ammo->GetAmmoType(), AmmoCount);
+	}
+
+	if (EquippedWeapon->GetAmmoType() == Ammo->GetAmmoType() && EquippedWeapon->GetAmmo() == 0)
+	{
+		ReloadWeapon();
+	}
+
+	Ammo->Destroy();
 }
 
 void ANimbleTerminatorCharacter::InitializeAmmoMap()
@@ -662,14 +744,20 @@ void ANimbleTerminatorCharacter::InitializeAmmoMap()
 
 bool ANimbleTerminatorCharacter::WeaponHasAmmo()
 {
-	if (EquippedWeapon == nullptr) return false;
+	if (EquippedWeapon == nullptr)
+	{
+		return false;
+	}
 
 	return EquippedWeapon->GetAmmo() > 0;
 }
 
 void ANimbleTerminatorCharacter::GrabClip()
 {
-	if (EquippedWeapon == nullptr || HandSceneComponent == nullptr || EquippedWeapon->GetItemMesh() == nullptr) return;
+	if (EquippedWeapon == nullptr || HandSceneComponent == nullptr || EquippedWeapon->GetItemMesh() == nullptr)
+	{
+		return;
+	}
 
 	const int32 ClipBoneIndex = EquippedWeapon->GetItemMesh()->GetBoneIndex(EquippedWeapon->GetClipBoneName());
 	ClipTransform = EquippedWeapon->GetItemMesh()->GetBoneTransform(ClipBoneIndex);
@@ -713,5 +801,7 @@ void ANimbleTerminatorCharacter::Jump()
 		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
 	}
 	else
+	{
 		Super::Jump();
+	}
 }
