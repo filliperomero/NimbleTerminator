@@ -660,11 +660,6 @@ void ANimbleTerminatorCharacter::SelectButtonPressed()
 		// const auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
 		// SwapWeapon(TraceHitWeapon);
 		TraceHitItem->StartItemCurve(this);
-
-		if (TraceHitItem->GetPickupSound())
-		{
-			UGameplayStatics::PlaySound2D(this, TraceHitItem->GetPickupSound());
-		}
 	}
 	else
 	{

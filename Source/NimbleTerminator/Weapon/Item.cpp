@@ -7,7 +7,9 @@
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "NimbleTerminator/Character/NimbleTerminatorCharacter.h"
+#include "Sound/SoundCue.h"
 
 AItem::AItem()
 {
@@ -214,6 +216,10 @@ void AItem::SetItemState(const EItemState State)
 void AItem::StartItemCurve(ANimbleTerminatorCharacter* Char)
 {
 	Character = Char;
+	
+	if (PickupSound)
+		UGameplayStatics::PlaySound2D(this, PickupSound);
+	
 	ItemInterpStartLocation = GetActorLocation();
 	bInterping = true;
 	SetItemState(EItemState::EIS_EquipInterping);
