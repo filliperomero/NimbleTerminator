@@ -30,6 +30,15 @@ enum class EItemState : uint8
 	EIS_MAX UMETA(DisplayName = "DefaultMax")
 };
 
+UENUM(BlueprintType)
+enum class EItemType : uint8
+{
+	EIT_Ammo UMETA(DisplayName = "Ammo"),
+	EIT_Weapon UMETA(DisplayName = "Weapon"),
+	
+	EIT_MAX UMETA(DisplayName = "DefaultMax")
+};
+
 UCLASS()
 class NIMBLETERMINATOR_API AItem : public AActor
 {
@@ -65,6 +74,10 @@ protected:
 
 	void FinishInterping();
 	void ItemInterp(float DeltaTime);
+	// Get interp location based on item type
+	FVector GetInterpLocation();
+
+	void PlayPickupSound();
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
@@ -131,6 +144,12 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Item Properties")
 	USoundCue* EquipSound;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	EItemType ItemType = EItemType::EIT_MAX;
+
+	// Index of the interp location this item is interping to
+	int32 InterpLocIndex = 0;
+
 public:	
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
@@ -143,4 +162,6 @@ public:
 	FORCEINLINE USoundCue* GetPickupSound() const { return PickupSound; }
 	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
+
+	void PlayEquipSound();
 };

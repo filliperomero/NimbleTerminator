@@ -47,6 +47,29 @@ ANimbleTerminatorCharacter::ANimbleTerminatorCharacter() :
 	GetCharacterMovement()->AirControl = 0.2f;
 
 	HandSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HandSceneComp"));
+
+
+	// Create Interpolation Components
+	WeaponInterpComp = CreateDefaultSubobject<USceneComponent>(TEXT("Weapon Interpolation Component"));
+	WeaponInterpComp->SetupAttachment(FollowCamera);
+
+	InterpComp1 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 1"));
+	InterpComp1->SetupAttachment(FollowCamera);
+
+	InterpComp2 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 2"));
+	InterpComp2->SetupAttachment(FollowCamera);
+
+	InterpComp3 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 3"));
+	InterpComp3->SetupAttachment(FollowCamera);
+
+	InterpComp4 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 4"));
+	InterpComp4->SetupAttachment(FollowCamera);
+
+	InterpComp5 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 5"));
+	InterpComp5->SetupAttachment(FollowCamera);
+
+	InterpComp6 = CreateDefaultSubobject<USceneComponent>(TEXT("Interpolation Component 6"));
+	InterpComp6->SetupAttachment(FollowCamera);
 }
 
 void ANimbleTerminatorCharacter::BeginPlay()
@@ -63,6 +86,8 @@ void ANimbleTerminatorCharacter::BeginPlay()
 	InitializeAmmoMap();
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
+	// Create FInterpLocation structs for each interp location. Add to array
+	InitializeInterpLocations();
 }
 
 void ANimbleTerminatorCharacter::Tick(float DeltaTime)
@@ -679,12 +704,11 @@ void ANimbleTerminatorCharacter::SwapWeapon(AWeapon* WeaponToSwap)
 	TraceHitItemLastFrame = nullptr;
 }
 
+// unused Function
 FVector ANimbleTerminatorCharacter::GetCameraInterpLocation()
 {
 	if (FollowCamera == nullptr)
-	{
 		return FVector(0.f, 0.f, 0.f);
-	}
 
 	const FVector CameraWorldLocation(FollowCamera->GetComponentLocation());
 	const FVector CameraForward(FollowCamera->GetForwardVector());
@@ -694,10 +718,7 @@ FVector ANimbleTerminatorCharacter::GetCameraInterpLocation()
 
 void ANimbleTerminatorCharacter::GetPickupItem(AItem* Item)
 {
-	if (Item->GetEquipSound())
-	{
-		UGameplayStatics::PlaySound2D(this, Item->GetEquipSound());
-	}
+	Item->PlayEquipSound();
 
 	auto Weapon = Cast<AWeapon>(Item);
 
@@ -799,4 +820,82 @@ void ANimbleTerminatorCharacter::Jump()
 	{
 		Super::Jump();
 	}
+}
+
+void ANimbleTerminatorCharacter::InitializeInterpLocations()
+{
+	const FInterpLocation WeaponLocation{ WeaponInterpComp, 0 };
+	InterpLocations.Add(WeaponLocation);
+
+	const FInterpLocation InterpLoc1{ InterpComp1, 0 };
+	InterpLocations.Add(InterpLoc1);
+
+	const FInterpLocation InterpLoc2{ InterpComp2, 0 };
+	InterpLocations.Add(InterpLoc2);
+
+	const FInterpLocation InterpLoc3{ InterpComp3, 0 };
+	InterpLocations.Add(InterpLoc3);
+
+	const FInterpLocation InterpLoc4{ InterpComp4, 0 };
+	InterpLocations.Add(InterpLoc4);
+
+	const FInterpLocation InterpLoc5{ InterpComp5, 0 };
+	InterpLocations.Add(InterpLoc5);
+
+	const FInterpLocation InterpLoc6{ InterpComp6, 0 };
+	InterpLocations.Add(InterpLoc6);	
+}
+
+int32 ANimbleTerminatorCharacter::GetInterpLocationIndex()
+{
+	int32 LowestIndex = 1;
+	int32 LowestCount = INT_MAX;
+	for (int32 i = 1; i < InterpLocations.Num(); i++)
+	{
+		if (InterpLocations[i].ItemCount < LowestCount)
+		{
+			LowestCount = InterpLocations[i].ItemCount;
+			LowestIndex = i;
+		}
+	}
+	
+	return LowestIndex;
+}
+
+void ANimbleTerminatorCharacter::IncrementInterpLocItemCount(const int32 Index, const int32 Amount)
+{
+	if (Amount < -1 || Amount > 1) return;
+	
+	if (InterpLocations.Num() >= Index)
+		InterpLocations[Index].ItemCount += Amount;
+}
+
+FInterpLocation ANimbleTerminatorCharacter::GetInterpLocation(const int32 Index)
+{
+	if (Index <= InterpLocations.Num())
+		return InterpLocations[Index];
+
+	return FInterpLocation();
+}
+
+void ANimbleTerminatorCharacter::ResetPickupSoundTimer()
+{
+	bShouldPlayPickupSound = true;
+}
+
+void ANimbleTerminatorCharacter::ResetEquipSoundTimer()
+{
+	bShouldPlayEquipSound = true;
+}
+
+void ANimbleTerminatorCharacter::StartPickupSoundTimer()
+{
+	bShouldPlayPickupSound = false;
+	GetWorldTimerManager().SetTimer(PickupSoundTimer, this, &ThisClass::ResetPickupSoundTimer, PickupSoundResetTime);
+}
+
+void ANimbleTerminatorCharacter::StartEquipSoundTimer()
+{
+	bShouldPlayEquipSound = false;
+	GetWorldTimerManager().SetTimer(EquipSoundTimer, this, &ThisClass::ResetEquipSoundTimer, EquipSoundResetTime);
 }

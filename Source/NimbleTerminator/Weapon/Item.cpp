@@ -66,7 +66,10 @@ void AItem::ItemInterp(float DeltaTime)
 	const float CurveValue = ItemZCurve->GetFloatValue(ElapsedTime);
 
 	FVector ItemLocation = ItemInterpStartLocation;
-	const FVector CameraInterpLocation = Character->GetCameraInterpLocation();
+	
+	// const FVector CameraInterpLocation = Character->GetCameraInterpLocation();
+	const FVector CameraInterpLocation = GetInterpLocation();
+	
 	// Vector from Item to  Camera InterpLocation, X and Y are zeroed out
 	const FVector ItemToCamera = FVector(0.f, 0.f, (CameraInterpLocation - ItemLocation).Z);
 	// Scale factor to multiply with the curveValue
@@ -97,8 +100,23 @@ void AItem::ItemInterp(float DeltaTime)
 	}
 }
 
+FVector AItem::GetInterpLocation()
+{
+	if (Character == nullptr) return FVector(0.f);
+
+	switch (ItemType)
+	{
+	case EItemType::EIT_Ammo:
+		return Character->GetInterpLocation(InterpLocIndex).SceneComponent->GetComponentLocation();
+	case EItemType::EIT_Weapon:
+		return Character->GetInterpLocation(0).SceneComponent->GetComponentLocation();
+	default:
+		return FVector(0.f);
+	}
+}
+
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                            UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor)
 	{
@@ -216,9 +234,11 @@ void AItem::SetItemState(const EItemState State)
 void AItem::StartItemCurve(ANimbleTerminatorCharacter* Char)
 {
 	Character = Char;
+
+	InterpLocIndex = Character->GetInterpLocationIndex();
+	Character->IncrementInterpLocItemCount(InterpLocIndex, 1);
 	
-	if (PickupSound)
-		UGameplayStatics::PlaySound2D(this, PickupSound);
+	PlayPickupSound();
 	
 	ItemInterpStartLocation = GetActorLocation();
 	bInterping = true;
@@ -235,6 +255,28 @@ void AItem::StartItemCurve(ANimbleTerminatorCharacter* Char)
 	}
 }
 
+void AItem::PlayPickupSound()
+{
+	if (Character == nullptr || PickupSound == nullptr) return;
+
+	if (Character->ShouldPlayPickupSound())
+	{
+		Character->StartPickupSoundTimer();
+		UGameplayStatics::PlaySound2D(this, PickupSound);
+	}
+}
+
+void AItem::PlayEquipSound()
+{
+	if (Character == nullptr || EquipSound == nullptr) return;
+
+	if (Character->ShouldPlayEquipSound())
+	{
+		Character->StartEquipSoundTimer();
+		UGameplayStatics::PlaySound2D(this, EquipSound);
+	}
+}
+
 void AItem::FinishInterping()
 {
 	bInterping = false;
@@ -242,6 +284,7 @@ void AItem::FinishInterping()
 	if (Character == nullptr) return;
 	
 	Character->GetPickupItem(this);
+	Character->IncrementInterpLocItemCount(InterpLocIndex, -1);
 	// Set scale back to normal
 	SetActorScale3D(FVector(1.f));
 }
