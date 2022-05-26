@@ -47,6 +47,8 @@ void AItem::BeginPlay()
 	SetActiveStars();
 
 	SetItemProperties(ItemState);
+	// Set custom depth to disable
+	InitializeCustomDepth();
 }
 
 void AItem::Tick(float DeltaTime)
@@ -275,6 +277,23 @@ void AItem::PlayEquipSound()
 		Character->StartEquipSoundTimer();
 		UGameplayStatics::PlaySound2D(this, EquipSound);
 	}
+}
+
+void AItem::EnableCustomDepth()
+{
+	if (ItemMesh)
+		ItemMesh->SetRenderCustomDepth(true);
+}
+
+void AItem::DisableCustomDepth()
+{
+	if (ItemMesh)
+		ItemMesh->SetRenderCustomDepth(false);
+}
+
+void AItem::InitializeCustomDepth()
+{
+	DisableCustomDepth();
 }
 
 void AItem::FinishInterping()

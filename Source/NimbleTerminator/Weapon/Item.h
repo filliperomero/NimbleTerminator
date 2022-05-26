@@ -78,6 +78,8 @@ protected:
 	FVector GetInterpLocation();
 
 	void PlayPickupSound();
+	
+	virtual void InitializeCustomDepth();
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
@@ -164,4 +166,7 @@ public:
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 
 	void PlayEquipSound();
+
+	virtual void EnableCustomDepth();
+	virtual void DisableCustomDepth();
 };

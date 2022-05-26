@@ -193,12 +193,14 @@ void ANimbleTerminatorCharacter::TraceForItems()
 			if (TraceHitItem && TraceHitItem->GetPickupWidget())
 			{
 				TraceHitItem->GetPickupWidget()->SetVisibility(true);
+				TraceHitItem->EnableCustomDepth();
 			}
 
 			// We are hitting a different AItem this frame from last frame or AItem is null
 			if (TraceHitItemLastFrame && TraceHitItemLastFrame != TraceHitItem)
 			{
 				TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+				TraceHitItemLastFrame->DisableCustomDepth();
 			}
 
 			TraceHitItemLastFrame = TraceHitItem;
@@ -207,6 +209,7 @@ void ANimbleTerminatorCharacter::TraceForItems()
 	else if (TraceHitItemLastFrame)
 	{
 		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+		TraceHitItemLastFrame->DisableCustomDepth();
 		TraceHitItemLastFrame = nullptr;
 		TraceHitItem = nullptr;
 	}
