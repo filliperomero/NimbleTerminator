@@ -82,6 +82,9 @@ protected:
 	
 	virtual void InitializeCustomDepth();
 	void EnableGlowMaterial();
+	void UpdatePulse();
+	void StartPulseTimer();
+	void ResetPulseTimer();
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
@@ -167,6 +170,18 @@ private:
 	UMaterialInstance* MaterialInstance;
 
 	bool bCanChangeCustomDepth = true;
+
+	// Curve to drive the dynamic material parameters
+	UPROPERTY(EditDefaultsOnly, Category = "Item Properties")
+	class UCurveVector* PulseCurve;
+
+	FTimerHandle PulseTimer;
+	UPROPERTY(EditDefaultsOnly, Category = "Item Properties")
+	float PulseCurveTime = 5.f;
+
+	float GlowAmount = 150.f;
+	float FresnelExponent = 3.f;
+	float FresnelReflectFraction = 4.f;
 
 public:	
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }

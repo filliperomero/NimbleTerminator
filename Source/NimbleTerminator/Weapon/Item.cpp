@@ -7,6 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Curves/CurveVector.h"
 #include "Kismet/GameplayStatics.h"
 #include "NimbleTerminator/Character/NimbleTerminatorCharacter.h"
 #include "Sound/SoundCue.h"
@@ -49,6 +50,8 @@ void AItem::BeginPlay()
 	SetItemProperties(ItemState);
 	// Set custom depth to disable
 	InitializeCustomDepth();
+
+	StartPulseTimer();
 }
 
 void AItem::OnConstruction(const FTransform& Transform)
@@ -70,6 +73,8 @@ void AItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	ItemInterp(DeltaTime);
+	// Get curve values from PulseCurve and set dynamic material parameters
+	UpdatePulse();
 }
 
 void AItem::ItemInterp(float DeltaTime)
@@ -239,6 +244,30 @@ void AItem::SetItemProperties(const EItemState State)
 	default:
 		break;
 	}
+}
+
+void AItem::StartPulseTimer()
+{
+	if (ItemState != EItemState::EIS_Pickup) return;
+
+	GetWorldTimerManager().SetTimer(PulseTimer, this, &ThisClass::ResetPulseTimer, PulseCurveTime);
+}
+
+void AItem::ResetPulseTimer()
+{
+	StartPulseTimer();
+}
+
+void AItem::UpdatePulse()
+{
+	if (PulseCurve == nullptr || ItemState != EItemState::EIS_Pickup) return;
+
+	const float ElapsedTime = GetWorldTimerManager().GetTimerElapsed(PulseTimer);
+	const FVector CurveValue = PulseCurve->GetVectorValue(ElapsedTime);
+
+	DynamicMaterialInstance->SetScalarParameterValue(TEXT("GlowAmount"), CurveValue.X * GlowAmount);
+	DynamicMaterialInstance->SetScalarParameterValue(TEXT("FresnelExponent"), CurveValue.Y * FresnelExponent);
+	DynamicMaterialInstance->SetScalarParameterValue(TEXT("FresnelReflectFraction"), CurveValue.Z * FresnelReflectFraction);
 }
 
 void AItem::SetItemState(const EItemState State)
