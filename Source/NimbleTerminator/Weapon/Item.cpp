@@ -260,14 +260,33 @@ void AItem::ResetPulseTimer()
 
 void AItem::UpdatePulse()
 {
-	if (PulseCurve == nullptr || ItemState != EItemState::EIS_Pickup) return;
+	float ElapsedTime = 0.f;
+	FVector CurveValue(0.f);
+	
+	switch (ItemState)
+	{
+	case EItemState::EIS_Pickup:
+		if (PulseCurve)
+		{
+			ElapsedTime = GetWorldTimerManager().GetTimerElapsed(PulseTimer);
+			CurveValue =  PulseCurve->GetVectorValue(ElapsedTime);
+		}
+		break;
+	case EItemState::EIS_EquipInterping:
+		if (InterpPulseCurve)
+		{
+			ElapsedTime = GetWorldTimerManager().GetTimerElapsed(ItemInterpTimer);
+			CurveValue =  InterpPulseCurve->GetVectorValue(ElapsedTime);
+		}
+		break;
+	}
 
-	const float ElapsedTime = GetWorldTimerManager().GetTimerElapsed(PulseTimer);
-	const FVector CurveValue = PulseCurve->GetVectorValue(ElapsedTime);
-
-	DynamicMaterialInstance->SetScalarParameterValue(TEXT("GlowAmount"), CurveValue.X * GlowAmount);
-	DynamicMaterialInstance->SetScalarParameterValue(TEXT("FresnelExponent"), CurveValue.Y * FresnelExponent);
-	DynamicMaterialInstance->SetScalarParameterValue(TEXT("FresnelReflectFraction"), CurveValue.Z * FresnelReflectFraction);
+	if (DynamicMaterialInstance)
+	{
+		DynamicMaterialInstance->SetScalarParameterValue(TEXT("GlowAmount"), CurveValue.X * GlowAmount);
+		DynamicMaterialInstance->SetScalarParameterValue(TEXT("FresnelExponent"), CurveValue.Y * FresnelExponent);
+		DynamicMaterialInstance->SetScalarParameterValue(TEXT("FresnelReflectFraction"), CurveValue.Z * FresnelReflectFraction);
+	}
 }
 
 void AItem::SetItemState(const EItemState State)
@@ -288,6 +307,7 @@ void AItem::StartItemCurve(ANimbleTerminatorCharacter* Char)
 	ItemInterpStartLocation = GetActorLocation();
 	bInterping = true;
 	SetItemState(EItemState::EIS_EquipInterping);
+	GetWorldTimerManager().ClearTimer(PulseTimer);
 	
 	GetWorldTimerManager().SetTimer(ItemInterpTimer, this, &ThisClass::FinishInterping, ZCurveTime);
 
@@ -366,6 +386,7 @@ void AItem::FinishInterping()
 	
 	Character->GetPickupItem(this);
 	Character->IncrementInterpLocItemCount(InterpLocIndex, -1);
+	SetItemState(EItemState::EIS_PickedUp);
 	// Set scale back to normal
 	SetActorScale3D(FVector(1.f));
 	DisableGlowMaterial();

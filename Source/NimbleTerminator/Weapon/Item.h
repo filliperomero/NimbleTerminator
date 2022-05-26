@@ -175,6 +175,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Item Properties")
 	class UCurveVector* PulseCurve;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Item Properties")
+	UCurveVector* InterpPulseCurve;
+
 	FTimerHandle PulseTimer;
 	UPROPERTY(EditDefaultsOnly, Category = "Item Properties")
 	float PulseCurveTime = 5.f;
