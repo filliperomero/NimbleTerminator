@@ -51,6 +51,20 @@ void AItem::BeginPlay()
 	InitializeCustomDepth();
 }
 
+void AItem::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+
+	if (MaterialInstance)
+	{
+		DynamicMaterialInstance = UMaterialInstanceDynamic::Create(MaterialInstance, this);
+		if (ItemMesh)
+			ItemMesh->SetMaterial(MaterialIndex, DynamicMaterialInstance);
+
+		EnableGlowMaterial();
+	}
+}
+
 void AItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -255,6 +269,8 @@ void AItem::StartItemCurve(ANimbleTerminatorCharacter* Char)
 
 		InterpInitialYawOffset = ItemRotationYaw - CameraRotationYaw;
 	}
+
+	bCanChangeCustomDepth = false;
 }
 
 void AItem::PlayPickupSound()
@@ -281,12 +297,16 @@ void AItem::PlayEquipSound()
 
 void AItem::EnableCustomDepth()
 {
+	if (!bCanChangeCustomDepth) return;
+	
 	if (ItemMesh)
 		ItemMesh->SetRenderCustomDepth(true);
 }
 
 void AItem::DisableCustomDepth()
 {
+	if (!bCanChangeCustomDepth) return;
+	
 	if (ItemMesh)
 		ItemMesh->SetRenderCustomDepth(false);
 }
@@ -296,9 +316,22 @@ void AItem::InitializeCustomDepth()
 	DisableCustomDepth();
 }
 
+void AItem::EnableGlowMaterial()
+{
+	if (DynamicMaterialInstance)
+		DynamicMaterialInstance->SetScalarParameterValue(TEXT("GlowBlendAlpha"), 0);
+}
+
+void AItem::DisableGlowMaterial()
+{
+	if (DynamicMaterialInstance)
+		DynamicMaterialInstance->SetScalarParameterValue(TEXT("GlowBlendAlpha"), 1);
+}
+
 void AItem::FinishInterping()
 {
 	bInterping = false;
+	bCanChangeCustomDepth = true;
 	
 	if (Character == nullptr) return;
 	
@@ -306,4 +339,6 @@ void AItem::FinishInterping()
 	Character->IncrementInterpLocItemCount(InterpLocIndex, -1);
 	// Set scale back to normal
 	SetActorScale3D(FVector(1.f));
+	DisableGlowMaterial();
+	DisableCustomDepth();
 }

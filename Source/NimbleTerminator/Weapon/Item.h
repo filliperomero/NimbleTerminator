@@ -50,6 +50,7 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 	UFUNCTION()
 	void OnSphereOverlap(
@@ -80,6 +81,8 @@ protected:
 	void PlayPickupSound();
 	
 	virtual void InitializeCustomDepth();
+	void EnableGlowMaterial();
+	void DisableGlowMaterial();
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
@@ -151,6 +154,20 @@ private:
 
 	// Index of the interp location this item is interping to
 	int32 InterpLocIndex = 0;
+
+	// Index for the material we'd like to change at runtime
+	UPROPERTY(EditAnywhere, Category = "Item Properties")
+	int32 MaterialIndex = 0;
+
+	// Dynamic instance that we can change at runtime
+	UPROPERTY(VisibleAnywhere, Category = "Item Properties")
+	UMaterialInstanceDynamic* DynamicMaterialInstance;
+
+	// Material instance used with the Dynamic Material Instance
+	UPROPERTY(EditAnywhere, Category = "Item Properties")
+	UMaterialInstance* MaterialInstance;
+
+	bool bCanChangeCustomDepth = true;
 
 public:	
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
