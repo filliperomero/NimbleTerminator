@@ -82,7 +82,6 @@ protected:
 	
 	virtual void InitializeCustomDepth();
 	void EnableGlowMaterial();
-	void DisableGlowMaterial();
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
@@ -186,4 +185,5 @@ public:
 
 	virtual void EnableCustomDepth();
 	virtual void DisableCustomDepth();
+	void DisableGlowMaterial();
 };
