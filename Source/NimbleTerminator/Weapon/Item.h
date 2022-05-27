@@ -186,6 +186,18 @@ private:
 	float FresnelExponent = 3.f;
 	float FresnelReflectFraction = 4.f;
 
+	// Background for this item in the inventory
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UTexture2D* IconBackground;
+
+	// Icon for this item in the inventory
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UTexture2D* IconItem;
+
+	// Ammo Icon for this item in the inventory
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties", meta = (AllowPrivateAccess = "true"))
+	UTexture2D* AmmoIcon;
+
 public:	
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
