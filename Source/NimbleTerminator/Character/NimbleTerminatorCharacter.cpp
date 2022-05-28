@@ -194,6 +194,11 @@ void ANimbleTerminatorCharacter::TraceForItems()
 		if (ItemTraceResult.bBlockingHit)
 		{
 			TraceHitItem = Cast<AItem>(ItemTraceResult.GetActor());
+			if (TraceHitItem && TraceHitItem->GetItemState() == EItemState::EIS_EquipInterping)
+			{
+				TraceHitItem = nullptr;
+			}
+			
 			if (TraceHitItem && TraceHitItem->GetPickupWidget())
 			{
 				TraceHitItem->GetPickupWidget()->SetVisibility(true);
@@ -247,6 +252,13 @@ void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	PlayerInputComponent->BindAction("Select", IE_Released, this, &ThisClass::SelectButtonReleased);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ThisClass::ReloadButtonPressed);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ThisClass::CrouchButtonPressed);
+
+	PlayerInputComponent->BindAction("FKey", IE_Pressed, this, &ThisClass::FKeyPressed);
+	PlayerInputComponent->BindAction("1Key", IE_Pressed, this, &ThisClass::OneKeyPressed);
+	PlayerInputComponent->BindAction("2Key", IE_Pressed, this, &ThisClass::TwoKeyPressed);
+	PlayerInputComponent->BindAction("3Key", IE_Pressed, this, &ThisClass::ThreeKeyPressed);
+	PlayerInputComponent->BindAction("4Key", IE_Pressed, this, &ThisClass::FourKeyPressed);
+	PlayerInputComponent->BindAction("5Key", IE_Pressed, this, &ThisClass::FiveKeyPressed);
 }
 
 void ANimbleTerminatorCharacter::MoveForward(float Value)
@@ -651,18 +663,23 @@ AWeapon* ANimbleTerminatorCharacter::SpawnDefaultWeapon()
 
 void ANimbleTerminatorCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 {
-	if (WeaponToEquip == nullptr)
-	{
-		return;
-	}
+	if (WeaponToEquip == nullptr) return;
 
 	const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketByName(FName("RightHandSocket"));
 
 	if (HandSocket)
-	{
 		HandSocket->AttachActor(WeaponToEquip, GetMesh());
-	}
 
+	if (EquippedWeapon == nullptr)
+	{
+		// -1 == no EquippedWeapon yet, no need to reverse the icon animation
+		EquipItemDelegate.Broadcast(-1, WeaponToEquip->GetSlotIndex());
+	}
+	else
+	{
+		EquipItemDelegate.Broadcast(EquippedWeapon->GetSlotIndex(), WeaponToEquip->GetSlotIndex());
+	}
+	
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetItemState(EItemState::EIS_Equipped);
 }
@@ -687,11 +704,14 @@ void ANimbleTerminatorCharacter::DropWeapon()
 
 void ANimbleTerminatorCharacter::SelectButtonPressed()
 {
+	if (CombatState != ECombatState::ECS_Unoccupied) return;
+	
 	if (TraceHitItem)
 	{
 		// const auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
 		// SwapWeapon(TraceHitWeapon);
 		TraceHitItem->StartItemCurve(this);
+		TraceHitItem = nullptr;
 	}
 	else
 	{
@@ -705,6 +725,12 @@ void ANimbleTerminatorCharacter::SelectButtonReleased()
 
 void ANimbleTerminatorCharacter::SwapWeapon(AWeapon* WeaponToSwap)
 {
+	if (Inventory.Num() - 1 >= EquippedWeapon->GetSlotIndex())
+	{
+		Inventory[EquippedWeapon->GetSlotIndex()] = WeaponToSwap;
+		WeaponToSwap->SetSlotIndex(EquippedWeapon->GetSlotIndex());
+	}
+
 	DropWeapon();
 	EquipWeapon(WeaponToSwap);
 	TraceHitItem = nullptr;
@@ -860,6 +886,64 @@ void ANimbleTerminatorCharacter::InitializeInterpLocations()
 
 	const FInterpLocation InterpLoc6{ InterpComp6, 0 };
 	InterpLocations.Add(InterpLoc6);	
+}
+
+void ANimbleTerminatorCharacter::FKeyPressed()
+{
+	if (EquippedWeapon->GetSlotIndex() == 0) return;
+
+	ExchangeInventoryItems(EquippedWeapon->GetSlotIndex(), 0);
+}
+
+void ANimbleTerminatorCharacter::OneKeyPressed()
+{
+	if (EquippedWeapon->GetSlotIndex() == 1) return;
+
+	ExchangeInventoryItems(EquippedWeapon->GetSlotIndex(), 1);
+}
+
+void ANimbleTerminatorCharacter::TwoKeyPressed()
+{
+	if (EquippedWeapon->GetSlotIndex() == 2) return;
+
+	ExchangeInventoryItems(EquippedWeapon->GetSlotIndex(), 2);
+}
+
+void ANimbleTerminatorCharacter::ThreeKeyPressed()
+{
+	if (EquippedWeapon->GetSlotIndex() == 3) return;
+
+	ExchangeInventoryItems(EquippedWeapon->GetSlotIndex(), 3);
+}
+
+void ANimbleTerminatorCharacter::FourKeyPressed()
+{
+	if (EquippedWeapon->GetSlotIndex() == 4) return;
+
+	ExchangeInventoryItems(EquippedWeapon->GetSlotIndex(), 4);
+}
+
+void ANimbleTerminatorCharacter::FiveKeyPressed()
+{
+	if (EquippedWeapon->GetSlotIndex() == 5) return;
+
+	ExchangeInventoryItems(EquippedWeapon->GetSlotIndex(), 5);
+}
+
+void ANimbleTerminatorCharacter::ExchangeInventoryItems(int32 CurrentItemIndex, int32 NewItemIndex)
+{
+	if (CombatState != ECombatState::ECS_Unoccupied
+		|| CurrentItemIndex == NewItemIndex
+		|| NewItemIndex >= Inventory.Num()
+		)
+		return;
+
+	auto OldEquippedWeapon = EquippedWeapon;
+	auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
+	EquipWeapon(NewWeapon);
+
+	OldEquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
+	NewWeapon->SetItemState(EItemState::EIS_Equipped);
 }
 
 int32 ANimbleTerminatorCharacter::GetInterpLocationIndex()

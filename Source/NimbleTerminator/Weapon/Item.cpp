@@ -217,6 +217,7 @@ void AItem::SetItemProperties(const EItemState State)
 	case EItemState::EIS_Falling:
 		ItemMesh->SetSimulatePhysics(true);
 		ItemMesh->SetEnableGravity(true);
+		ItemMesh->SetVisibility(true);
 		ItemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		ItemMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 		ItemMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
@@ -400,7 +401,6 @@ void AItem::FinishInterping()
 	
 	Character->GetPickupItem(this);
 	Character->IncrementInterpLocItemCount(InterpLocIndex, -1);
-	SetItemState(EItemState::EIS_PickedUp);
 	// Set scale back to normal
 	SetActorScale3D(FVector(1.f));
 	DisableGlowMaterial();
