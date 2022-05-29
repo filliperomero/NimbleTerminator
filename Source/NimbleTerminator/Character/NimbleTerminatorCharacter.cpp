@@ -205,6 +205,10 @@ void ANimbleTerminatorCharacter::TraceForItems()
 			{
 				TraceHitItem->GetPickupWidget()->SetVisibility(true);
 				TraceHitItem->EnableCustomDepth();
+
+				Inventory.Num() >= INVENTORY_CAPACITY
+					? TraceHitItem->SetCharacterInventoryFull(true)
+					: TraceHitItem->SetCharacterInventoryFull(false);
 			}
 
 			// We are hitting a different AItem this frame from last frame or AItem is null
