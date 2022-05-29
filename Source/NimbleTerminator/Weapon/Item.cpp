@@ -310,14 +310,14 @@ void AItem::SetItemState(const EItemState State)
 	SetItemProperties(State);
 }
 
-void AItem::StartItemCurve(ANimbleTerminatorCharacter* Char)
+void AItem::StartItemCurve(ANimbleTerminatorCharacter* Char, bool bForcePlaySound)
 {
 	Character = Char;
 
 	InterpLocIndex = Character->GetInterpLocationIndex();
 	Character->IncrementInterpLocItemCount(InterpLocIndex, 1);
 	
-	PlayPickupSound();
+	PlayPickupSound(bForcePlaySound);
 	
 	ItemInterpStartLocation = GetActorLocation();
 	bInterping = true;
@@ -337,22 +337,30 @@ void AItem::StartItemCurve(ANimbleTerminatorCharacter* Char)
 	bCanChangeCustomDepth = false;
 }
 
-void AItem::PlayPickupSound()
+void AItem::PlayPickupSound(bool bForcePlaySound)
 {
 	if (Character == nullptr || PickupSound == nullptr) return;
 
-	if (Character->ShouldPlayPickupSound())
+	if (bForcePlaySound)
+	{
+		UGameplayStatics::PlaySound2D(this, PickupSound);
+	}
+	else if (Character->ShouldPlayPickupSound())
 	{
 		Character->StartPickupSoundTimer();
 		UGameplayStatics::PlaySound2D(this, PickupSound);
 	}
 }
 
-void AItem::PlayEquipSound()
+void AItem::PlayEquipSound(bool bForcePlaySound)
 {
 	if (Character == nullptr || EquipSound == nullptr) return;
 
-	if (Character->ShouldPlayEquipSound())
+	if (bForcePlaySound)
+	{
+		UGameplayStatics::PlaySound2D(this, EquipSound);
+	}
+	else if (Character->ShouldPlayEquipSound())
 	{
 		Character->StartEquipSoundTimer();
 		UGameplayStatics::PlaySound2D(this, EquipSound);

@@ -78,7 +78,7 @@ protected:
 	// Get interp location based on item type
 	FVector GetInterpLocation();
 
-	void PlayPickupSound();
+	void PlayPickupSound(bool bForcePlaySound = false);
 	
 	virtual void InitializeCustomDepth();
 	void EnableGlowMaterial();
@@ -210,12 +210,12 @@ public:
 	void SetItemState(const EItemState State);
 	FORCEINLINE USkeletalMeshComponent* GetItemMesh() const { return ItemMesh; }
 
-	void StartItemCurve(ANimbleTerminatorCharacter* Char);
+	void StartItemCurve(ANimbleTerminatorCharacter* Char, bool bForcePlaySound = false);
 	FORCEINLINE USoundCue* GetPickupSound() const { return PickupSound; }
 	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 
-	void PlayEquipSound();
+	void PlayEquipSound(bool bForcePlaySound = false);
 
 	virtual void EnableCustomDepth();
 	virtual void DisableCustomDepth();
@@ -223,4 +223,5 @@ public:
 
 	FORCEINLINE int32 GetSlotIndex() const { return SlotIndex; }
 	FORCEINLINE void SetSlotIndex(const int32 Index) { SlotIndex = Index; }
+	FORCEINLINE void SetCharacter(ANimbleTerminatorCharacter* Char) { Character = Char; }
 };

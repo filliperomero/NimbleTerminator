@@ -87,6 +87,8 @@ void ANimbleTerminatorCharacter::BeginPlay()
 	EquippedWeapon->DisableCustomDepth();
 	EquippedWeapon->DisableGlowMaterial();
 	EquippedWeapon->SetSlotIndex(0);
+	EquippedWeapon->SetCharacter(this);
+	
 	InitializeAmmoMap();
 
 	GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed;
@@ -715,7 +717,7 @@ void ANimbleTerminatorCharacter::SelectButtonPressed()
 	{
 		// const auto TraceHitWeapon = Cast<AWeapon>(TraceHitItem);
 		// SwapWeapon(TraceHitWeapon);
-		TraceHitItem->StartItemCurve(this);
+		TraceHitItem->StartItemCurve(this, true);
 		TraceHitItem = nullptr;
 	}
 	else
@@ -945,17 +947,23 @@ void ANimbleTerminatorCharacter::ExchangeInventoryItems(int32 CurrentItemIndex, 
 
 	auto OldEquippedWeapon = EquippedWeapon;
 	auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
-	EquipWeapon(NewWeapon);
-
-	OldEquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
-	NewWeapon->SetItemState(EItemState::EIS_Equipped);
-
-	CombatState = ECombatState::ECS_Equipping;
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && EquipMontage)
+	
+	if (NewWeapon)
 	{
-		AnimInstance->Montage_Play(EquipMontage, 1.0f);
-		AnimInstance->Montage_JumpToSection(FName("Equip"));
+		EquipWeapon(NewWeapon);
+
+		OldEquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
+		NewWeapon->SetItemState(EItemState::EIS_Equipped);
+
+		CombatState = ECombatState::ECS_Equipping;
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && EquipMontage)
+		{
+			AnimInstance->Montage_Play(EquipMontage, 1.0f);
+			AnimInstance->Montage_JumpToSection(FName("Equip"));
+		}
+
+		NewWeapon->PlayEquipSound(true);
 	}
 }
 
