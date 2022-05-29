@@ -672,7 +672,7 @@ AWeapon* ANimbleTerminatorCharacter::SpawnDefaultWeapon()
 	return nullptr;
 }
 
-void ANimbleTerminatorCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+void ANimbleTerminatorCharacter::EquipWeapon(AWeapon* WeaponToEquip, bool bSwapping)
 {
 	if (WeaponToEquip == nullptr) return;
 
@@ -686,7 +686,7 @@ void ANimbleTerminatorCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 		// -1 == no EquippedWeapon yet, no need to reverse the icon animation
 		EquipItemDelegate.Broadcast(-1, WeaponToEquip->GetSlotIndex());
 	}
-	else
+	else if (!bSwapping)
 	{
 		EquipItemDelegate.Broadcast(EquippedWeapon->GetSlotIndex(), WeaponToEquip->GetSlotIndex());
 	}
@@ -697,10 +697,7 @@ void ANimbleTerminatorCharacter::EquipWeapon(AWeapon* WeaponToEquip)
 
 void ANimbleTerminatorCharacter::DropWeapon()
 {
-	if (EquippedWeapon == nullptr)
-	{
-		return;
-	}
+	if (EquippedWeapon == nullptr) return;
 
 	if (EquippedWeapon->GetItemMesh())
 	{
@@ -708,8 +705,6 @@ void ANimbleTerminatorCharacter::DropWeapon()
 		EquippedWeapon->GetItemMesh()->DetachFromComponent(DetachmentTransformRules);
 		EquippedWeapon->SetItemState(EItemState::EIS_Falling);
 		EquippedWeapon->ThrowWeapon();
-
-		EquippedWeapon = nullptr;
 	}
 }
 
@@ -743,7 +738,7 @@ void ANimbleTerminatorCharacter::SwapWeapon(AWeapon* WeaponToSwap)
 	}
 
 	DropWeapon();
-	EquipWeapon(WeaponToSwap);
+	EquipWeapon(WeaponToSwap, true);
 	TraceHitItem = nullptr;
 	TraceHitItemLastFrame = nullptr;
 }
@@ -943,31 +938,30 @@ void ANimbleTerminatorCharacter::FiveKeyPressed()
 
 void ANimbleTerminatorCharacter::ExchangeInventoryItems(int32 CurrentItemIndex, int32 NewItemIndex)
 {
-	if (CombatState != ECombatState::ECS_Unoccupied
-		|| CurrentItemIndex == NewItemIndex
-		|| NewItemIndex >= Inventory.Num()
-		)
-		return;
-
-	auto OldEquippedWeapon = EquippedWeapon;
-	auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
-	
-	if (NewWeapon)
+	if (CurrentItemIndex != NewItemIndex
+		&& NewItemIndex < Inventory.Num()
+		&& (CombatState == ECombatState::ECS_Unoccupied || CombatState == ECombatState::ECS_Equipping))
 	{
-		EquipWeapon(NewWeapon);
-
-		OldEquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
-		NewWeapon->SetItemState(EItemState::EIS_Equipped);
-
-		CombatState = ECombatState::ECS_Equipping;
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-		if (AnimInstance && EquipMontage)
+		auto OldEquippedWeapon = EquippedWeapon;
+		auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
+	
+		if (NewWeapon)
 		{
-			AnimInstance->Montage_Play(EquipMontage, 1.0f);
-			AnimInstance->Montage_JumpToSection(FName("Equip"));
-		}
+			EquipWeapon(NewWeapon);
 
-		NewWeapon->PlayEquipSound(true);
+			OldEquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
+			NewWeapon->SetItemState(EItemState::EIS_Equipped);
+
+			CombatState = ECombatState::ECS_Equipping;
+			UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+			if (AnimInstance && EquipMontage)
+			{
+				AnimInstance->Montage_Play(EquipMontage, 1.0f);
+				AnimInstance->Montage_JumpToSection(FName("Equip"));
+			}
+
+			NewWeapon->PlayEquipSound(true);
+		}
 	}
 }
 

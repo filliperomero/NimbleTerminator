@@ -107,7 +107,7 @@ protected:
 
 	void TraceForItems();
 	class AWeapon* SpawnDefaultWeapon();
-	void EquipWeapon(AWeapon* WeaponToEquip);
+	void EquipWeapon(AWeapon* WeaponToEquip, bool bSwapping = false);
 
 	void DropWeapon();
 	void SelectButtonPressed();
