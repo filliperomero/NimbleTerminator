@@ -395,6 +395,11 @@ void ANimbleTerminatorCharacter::FinishReloading()
 	}
 }
 
+void ANimbleTerminatorCharacter::FinishEquipping()
+{
+	CombatState = ECombatState::ECS_Unoccupied;
+}
+
 bool ANimbleTerminatorCharacter::HasCarriedAmmo()
 {
 	if (EquippedWeapon == nullptr)
@@ -944,6 +949,14 @@ void ANimbleTerminatorCharacter::ExchangeInventoryItems(int32 CurrentItemIndex, 
 
 	OldEquippedWeapon->SetItemState(EItemState::EIS_PickedUp);
 	NewWeapon->SetItemState(EItemState::EIS_Equipped);
+
+	CombatState = ECombatState::ECS_Equipping;
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && EquipMontage)
+	{
+		AnimInstance->Montage_Play(EquipMontage, 1.0f);
+		AnimInstance->Montage_JumpToSection(FName("Equip"));
+	}
 }
 
 int32 ANimbleTerminatorCharacter::GetInterpLocationIndex()

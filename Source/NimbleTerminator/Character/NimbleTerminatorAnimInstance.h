@@ -105,6 +105,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Crouch, meta = (AllowPrivateAccess = "true"))
 	bool bCrouching = false;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Equipping, meta = (AllowPrivateAccess = "true"))
+	bool bEquipping = false;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float RecoilWeight = 1.f;
 };

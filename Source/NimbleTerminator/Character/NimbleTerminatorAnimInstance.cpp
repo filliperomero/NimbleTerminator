@@ -37,6 +37,7 @@ void UNimbleTerminatorAnimInstance::UpdateAnimationProperties(float DeltaTime)
 	bAiming = NimbleTerminatorCharacter->GetAiming();
 
 	bReloading = NimbleTerminatorCharacter->GetCombatState() == ECombatState::ECS_Reloading;
+	bEquipping = NimbleTerminatorCharacter->GetCombatState() == ECombatState::ECS_Equipping;
 
 	bCrouching = NimbleTerminatorCharacter->IsCrouching();
 
@@ -108,7 +109,7 @@ void UNimbleTerminatorAnimInstance::TurnInPlace()
 
 	if (bTurningInPlace)
 	{
-		if (bReloading)
+		if (bReloading || bEquipping)
 			RecoilWeight = 1.f;
 		else
 			RecoilWeight = 0.f;
@@ -117,14 +118,14 @@ void UNimbleTerminatorAnimInstance::TurnInPlace()
 	{
 		if (bCrouching)
 		{
-			if (bReloading)
+			if (bReloading || bEquipping)
 				RecoilWeight = 1.f;
 			else
 				RecoilWeight = 0.1f;
 		}
 		else
 		{
-			if (bAiming || bReloading)
+			if (bAiming || bReloading || bEquipping)
 				RecoilWeight = 1.f;
 			else
 				RecoilWeight = 0.5f;
