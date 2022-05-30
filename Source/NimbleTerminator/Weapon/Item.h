@@ -228,4 +228,5 @@ public:
 	FORCEINLINE void SetSlotIndex(const int32 Index) { SlotIndex = Index; }
 	FORCEINLINE void SetCharacter(ANimbleTerminatorCharacter* Char) { Character = Char; }
 	FORCEINLINE void SetCharacterInventoryFull(const bool bFull) { bCharacterInventoryFull = bFull; }
+	FORCEINLINE EItemType GetItemType() const { return ItemType; }
 };

@@ -196,6 +196,20 @@ void ANimbleTerminatorCharacter::TraceForItems()
 		if (ItemTraceResult.bBlockingHit)
 		{
 			TraceHitItem = Cast<AItem>(ItemTraceResult.GetActor());
+			if (TraceHitItem)
+			{
+				if (TraceHitItem->GetItemType() == EItemType::EIT_Weapon)
+				{
+					if (HighlightedSlot == -1)
+						HighlightInventorySlot();
+				}
+			}
+			else
+			{
+				if (HighlightedSlot != -1)
+					UnHighlightInventorySlot();
+			}
+			
 			if (TraceHitItem && TraceHitItem->GetItemState() == EItemState::EIS_EquipInterping)
 			{
 				TraceHitItem = nullptr;
@@ -963,6 +977,35 @@ void ANimbleTerminatorCharacter::ExchangeInventoryItems(int32 CurrentItemIndex, 
 			NewWeapon->PlayEquipSound(true);
 		}
 	}
+}
+
+int32 ANimbleTerminatorCharacter::GetEmptyInventorySlot()
+{
+	for (int32 i = 0; i < Inventory.Num(); i++)
+	{
+		if (Inventory[i] == nullptr)
+			return i;
+	}
+
+	if (Inventory.Num() < INVENTORY_CAPACITY)
+		return Inventory.Num();
+
+	// Inventory is full
+	return -1;
+}
+
+void ANimbleTerminatorCharacter::HighlightInventorySlot()
+{
+	const int32 EmptySlot = GetEmptyInventorySlot();
+	HighlightIconDelegate.Broadcast(EmptySlot, true);
+
+	HighlightedSlot = EmptySlot;
+}
+
+void ANimbleTerminatorCharacter::UnHighlightInventorySlot()
+{
+	HighlightIconDelegate.Broadcast(HighlightedSlot, false);
+	HighlightedSlot = -1;
 }
 
 int32 ANimbleTerminatorCharacter::GetInterpLocationIndex()

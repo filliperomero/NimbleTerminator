@@ -154,7 +154,10 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	{
 		ANimbleTerminatorCharacter* NimbleTerminatorCharacter = Cast<ANimbleTerminatorCharacter>(OtherActor);
 		if (NimbleTerminatorCharacter)
+		{
 			NimbleTerminatorCharacter->IncrementOverlappedItemCount(-1);
+			NimbleTerminatorCharacter->UnHighlightInventorySlot();
+		}
 	}
 }
 
@@ -409,6 +412,7 @@ void AItem::FinishInterping()
 	
 	Character->GetPickupItem(this);
 	Character->IncrementInterpLocItemCount(InterpLocIndex, -1);
+	Character->UnHighlightInventorySlot();
 	// Set scale back to normal
 	SetActorScale3D(FVector(1.f));
 	DisableGlowMaterial();
