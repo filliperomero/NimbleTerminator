@@ -258,7 +258,9 @@ public:
 
 	void StartItemCurve(ANimbleTerminatorCharacter* Char, bool bForcePlaySound = false);
 	FORCEINLINE USoundCue* GetPickupSound() const { return PickupSound; }
+	FORCEINLINE void SetPickupSound(USoundCue* Sound) { PickupSound = Sound;}
 	FORCEINLINE USoundCue* GetEquipSound() const { return EquipSound; }
+	FORCEINLINE void SetEquipSound(USoundCue* Sound) { EquipSound = Sound; }
 	FORCEINLINE int32 GetItemCount() const { return ItemCount; }
 
 	void PlayEquipSound(bool bForcePlaySound = false);
@@ -272,4 +274,14 @@ public:
 	FORCEINLINE void SetCharacter(ANimbleTerminatorCharacter* Char) { Character = Char; }
 	FORCEINLINE void SetCharacterInventoryFull(const bool bFull) { bCharacterInventoryFull = bFull; }
 	FORCEINLINE EItemType GetItemType() const { return ItemType; }
+	FORCEINLINE void SetItemName(const FString Name) { ItemName = Name; }
+	FORCEINLINE void SetIconItem(UTexture2D* Icon) { IconItem = Icon; }
+	FORCEINLINE void SetAmmoIcon(UTexture2D* Icon) { AmmoIcon = Icon; }
+	FORCEINLINE UMaterialInstance* GetMaterialInstance() const { return MaterialInstance; }
+	FORCEINLINE void SetMaterialInstance(UMaterialInstance* Instance) { MaterialInstance = Instance; }
+	FORCEINLINE UMaterialInstanceDynamic* GetDynamicMaterialInstance() const { return DynamicMaterialInstance; }
+	FORCEINLINE void SetDynamicMaterialInstance(UMaterialInstanceDynamic* Instance) { DynamicMaterialInstance = Instance; }
+	FORCEINLINE FLinearColor GetGlowColor() const { return GlowColor; }
+	FORCEINLINE int32 GetMaterialIndex() const { return MaterialIndex; }
+	FORCEINLINE void SetMaterialIndex(const int32 Index) { MaterialIndex = Index; }
 };

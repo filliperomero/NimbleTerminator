@@ -8,6 +8,63 @@ AWeapon::AWeapon()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+void AWeapon::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+
+	const FString WeaponTablePath{TEXT("DataTable'/Game/DataTable/WeaponDataTable.WeaponDataTable'")};
+	UDataTable* WeaponTableObject = Cast<UDataTable>(StaticLoadObject(UDataTable::StaticClass(), nullptr, *WeaponTablePath));
+
+	if (WeaponTableObject)
+	{
+		FWeaponDataTable* WeaponDataRow = nullptr;
+		
+		switch (WeaponType)
+		{
+		case EWeaponType::EWT_SubmachineGun:
+			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("SubmachineGun"), TEXT(""));
+			break;
+		case EWeaponType::EWT_AssaultRifle:
+			WeaponDataRow = WeaponTableObject->FindRow<FWeaponDataTable>(FName("AssaultRifle"), TEXT(""));
+			break;
+		default:
+			break;
+		}
+
+		if (WeaponDataRow)
+		{
+			AmmoType = WeaponDataRow->AmmoType;
+			Ammo = WeaponDataRow->WeaponAmmo;
+			MagazineCapacity = WeaponDataRow->MagazineCapacity;
+			SetPickupSound(WeaponDataRow->PickupSound);
+			SetEquipSound(WeaponDataRow->EquipSound);
+			if (GetItemMesh())	GetItemMesh()->SetSkeletalMesh(WeaponDataRow->ItemMesh);
+			SetItemName(WeaponDataRow->ItemName);
+			SetIconItem(WeaponDataRow->InventoryIcon);
+			SetAmmoIcon(WeaponDataRow->AmmoIcon);
+			
+			PreviousMaterialIndex = GetMaterialIndex();
+			// Clear the Material at this index since if we change the weapon, the index could be different and the
+			// weapon could end up with 2 materials in different index's
+			GetItemMesh()->SetMaterial(PreviousMaterialIndex, nullptr);
+			SetMaterialIndex(WeaponDataRow->MaterialIndex);
+
+			if (WeaponDataRow->MaterialInstance)
+				SetMaterialInstance(WeaponDataRow->MaterialInstance);
+		}
+
+		if (GetMaterialInstance())
+		{
+			SetDynamicMaterialInstance(UMaterialInstanceDynamic::Create(GetMaterialInstance(), this));
+			GetDynamicMaterialInstance()->SetVectorParameterValue(TEXT("FresnelColor"), GetGlowColor());
+			if (GetItemMesh())
+				GetItemMesh()->SetMaterial(GetMaterialIndex(), GetDynamicMaterialInstance());
+
+			EnableGlowMaterial();
+		}
+	}
+}
+
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -75,3 +132,4 @@ void AWeapon::StopFalling()
 	SetItemState(EItemState::EIS_Pickup);
 	StartPulseTimer();
 }
+
