@@ -6,6 +6,7 @@
 #include "NimbleTerminatorCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "NimbleTerminator/Weapon/Weapon.h"
 
 void UNimbleTerminatorAnimInstance::UpdateAnimationProperties(float DeltaTime)
 {
@@ -40,6 +41,9 @@ void UNimbleTerminatorAnimInstance::UpdateAnimationProperties(float DeltaTime)
 	bEquipping = NimbleTerminatorCharacter->GetCombatState() == ECombatState::ECS_Equipping;
 
 	bCrouching = NimbleTerminatorCharacter->IsCrouching();
+
+	if (NimbleTerminatorCharacter->GetEquippedWeapon())
+		EquippedWeaponType = NimbleTerminatorCharacter->GetEquippedWeapon()->GetWeaponType();
 
 	if (bReloading) OffsetState = EOffsetState::EOS_Reloading;
 	else if (bIsInAir) OffsetState = EOffsetState::EOS_InAir;
