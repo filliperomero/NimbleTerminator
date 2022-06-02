@@ -38,10 +38,16 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			MagazineCapacity = WeaponDataRow->MagazineCapacity;
 			SetPickupSound(WeaponDataRow->PickupSound);
 			SetEquipSound(WeaponDataRow->EquipSound);
-			if (GetItemMesh())	GetItemMesh()->SetSkeletalMesh(WeaponDataRow->ItemMesh);
 			SetItemName(WeaponDataRow->ItemName);
 			SetIconItem(WeaponDataRow->InventoryIcon);
 			SetAmmoIcon(WeaponDataRow->AmmoIcon);
+			SetClipBoneName(WeaponDataRow->ClipBoneName);
+			SetReloadMontageSection(WeaponDataRow->ReloadMontageSection);
+			if (GetItemMesh())
+			{
+				GetItemMesh()->SetSkeletalMesh(WeaponDataRow->ItemMesh);
+				GetItemMesh()->SetAnimInstanceClass(WeaponDataRow->AnimBP);
+			}
 			
 			PreviousMaterialIndex = GetMaterialIndex();
 			// Clear the Material at this index since if we change the weapon, the index could be different and the
