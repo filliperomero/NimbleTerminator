@@ -113,5 +113,8 @@ private:
 	float RecoilWeight = 1.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	EWeaponType EquippedWeaponType;
+	EWeaponType EquippedWeaponType { EWeaponType::EWT_MAX };
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	bool bShouldUseFABRIK { false };
 };

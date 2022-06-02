@@ -39,8 +39,9 @@ void UNimbleTerminatorAnimInstance::UpdateAnimationProperties(float DeltaTime)
 
 	bReloading = NimbleTerminatorCharacter->GetCombatState() == ECombatState::ECS_Reloading;
 	bEquipping = NimbleTerminatorCharacter->GetCombatState() == ECombatState::ECS_Equipping;
-
 	bCrouching = NimbleTerminatorCharacter->IsCrouching();
+	bShouldUseFABRIK = NimbleTerminatorCharacter->GetCombatState() == ECombatState::ECS_Unoccupied ||
+		NimbleTerminatorCharacter->GetCombatState() == ECombatState::ECS_FireTimerInProgress;
 
 	if (NimbleTerminatorCharacter->GetEquippedWeapon())
 		EquippedWeaponType = NimbleTerminatorCharacter->GetEquippedWeapon()->GetWeaponType();
