@@ -450,9 +450,10 @@ void ANimbleTerminatorCharacter::FireButtonReleased()
 
 void ANimbleTerminatorCharacter::StartFireTimer()
 {
+	if (EquippedWeapon == nullptr) return;
+	
 	CombatState = ECombatState::ECS_FireTimerInProgress;
-
-	GetWorldTimerManager().SetTimer(FireTimer, this, &ThisClass::FireTimerFinished, AutomaticFireRate);
+	GetWorldTimerManager().SetTimer(FireTimer, this, &ThisClass::FireTimerFinished, EquippedWeapon->GetAutoFireRate());
 }
 
 void ANimbleTerminatorCharacter::FireTimerFinished()
@@ -474,9 +475,7 @@ void ANimbleTerminatorCharacter::FireTimerFinished()
 void ANimbleTerminatorCharacter::FireWeapon()
 {
 	if (EquippedWeapon == nullptr || CombatState != ECombatState::ECS_Unoccupied || !WeaponHasAmmo())
-	{
 		return;
-	}
 
 	PlayFireSound();
 	SendBullet();
@@ -518,9 +517,9 @@ bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketL
 
 void ANimbleTerminatorCharacter::PlayFireSound()
 {
-	if (FireSound)
+	if (EquippedWeapon->GetFireSound())
 	{
-		UGameplayStatics::PlaySound2D(this, FireSound);
+		UGameplayStatics::PlaySound2D(this, EquippedWeapon->GetFireSound());
 	}
 }
 
@@ -546,10 +545,8 @@ void ANimbleTerminatorCharacter::SendBullet()
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			if (MuzzleFlash)
-			{
-				UGameplayStatics::SpawnEmitterAtLocation(World, MuzzleFlash, SocketTransform);
-			}
+			if (EquippedWeapon->GetMuzzleFlash())
+				UGameplayStatics::SpawnEmitterAtLocation(World, EquippedWeapon->GetMuzzleFlash(), SocketTransform);
 
 			FVector BeamEnd;
 			bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);

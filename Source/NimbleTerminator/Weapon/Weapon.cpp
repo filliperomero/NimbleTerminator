@@ -48,6 +48,9 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			CrosshairsRight = WeaponDataRow->CrosshairsRight;
 			CrosshairsBottom = WeaponDataRow->CrosshairsBottom;
 			CrosshairsTop = WeaponDataRow->CrosshairsTop;
+			AutoFireRate = WeaponDataRow->AutoFireRate;
+			FireSound = WeaponDataRow->FireSound;
+			MuzzleFlash = WeaponDataRow->MuzzleFlash;
 			if (GetItemMesh())
 			{
 				GetItemMesh()->SetSkeletalMesh(WeaponDataRow->ItemMesh);

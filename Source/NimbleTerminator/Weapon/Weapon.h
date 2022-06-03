@@ -9,6 +9,8 @@
 #include "Engine/DataTable.h"
 #include "Weapon.generated.h"
 
+class UParticleSystem;
+
 USTRUCT(BlueprintType)
 struct FWeaponDataTable : public FTableRowBase
 {
@@ -70,6 +72,15 @@ struct FWeaponDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* CrosshairsTop;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AutoFireRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UParticleSystem* MuzzleFlash;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundCue* FireSound;
 };
 
 /**
@@ -141,6 +152,15 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (AllowPrivateAccess = "true"))
 	UTexture2D* CrosshairsTop;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (AllowPrivateAccess = "true"))
+	float AutoFireRate;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (AllowPrivateAccess = "true"))
+	UParticleSystem* MuzzleFlash;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = DataTable, meta = (AllowPrivateAccess = "true"))
+	USoundCue* FireSound;
+
 public:
 	void ThrowWeapon();
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
@@ -153,6 +173,9 @@ public:
 	FORCEINLINE FName GetClipBoneName() const { return ClipBoneName; }
 	FORCEINLINE void SetClipBoneName(const FName ClipName) { ClipBoneName = ClipName; }
 	FORCEINLINE void SetMovingClip(const bool Move) { bMovingClip = Move; }
+	FORCEINLINE float GetAutoFireRate() const { return AutoFireRate; }
+	FORCEINLINE UParticleSystem* GetMuzzleFlash() const { return MuzzleFlash; }
+	FORCEINLINE USoundCue* GetFireSound() const { return FireSound; }
 
 	void ReloadAmmo(int32 Amount);
 	bool IsClipFull() const;

@@ -203,13 +203,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"), meta = (ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
 	float MouseAimingLookUpRate = 0.6f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class USoundCue* FireSound;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
-	class UParticleSystem* MuzzleFlash;
-
+	
 	// Montage for fire the weapon
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* HipFireMontage;
@@ -269,8 +263,6 @@ private:
 	 */
 	bool bFireButtonPressed = false;
 	bool bCanFire = true;
-	UPROPERTY(EditAnywhere, Category = Combat)
-	float AutomaticFireRate = 0.15f;
 
 	FTimerHandle FireTimer;
 
