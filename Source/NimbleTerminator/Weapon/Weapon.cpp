@@ -43,6 +43,11 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			SetAmmoIcon(WeaponDataRow->AmmoIcon);
 			SetClipBoneName(WeaponDataRow->ClipBoneName);
 			SetReloadMontageSection(WeaponDataRow->ReloadMontageSection);
+			CrosshairsMiddle = WeaponDataRow->CrosshairsMiddle;
+			CrosshairsLeft = WeaponDataRow->CrosshairsLeft;
+			CrosshairsRight = WeaponDataRow->CrosshairsRight;
+			CrosshairsBottom = WeaponDataRow->CrosshairsBottom;
+			CrosshairsTop = WeaponDataRow->CrosshairsTop;
 			if (GetItemMesh())
 			{
 				GetItemMesh()->SetSkeletalMesh(WeaponDataRow->ItemMesh);
