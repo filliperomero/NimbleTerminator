@@ -459,17 +459,16 @@ void ANimbleTerminatorCharacter::StartFireTimer()
 void ANimbleTerminatorCharacter::FireTimerFinished()
 {
 	CombatState = ECombatState::ECS_Unoccupied;
+
+	if (EquippedWeapon == nullptr) return;
+	
 	if (WeaponHasAmmo())
 	{
-		if (bFireButtonPressed)
-		{
+		if (bFireButtonPressed && EquippedWeapon->IsWeaponAutomatic())
 			FireWeapon();
-		}
 	}
 	else
-	{
 		ReloadWeapon();
-	}
 }
 
 void ANimbleTerminatorCharacter::FireWeapon()

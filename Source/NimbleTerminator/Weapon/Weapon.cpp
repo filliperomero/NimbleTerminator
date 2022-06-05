@@ -55,6 +55,7 @@ void AWeapon::OnConstruction(const FTransform& Transform)
 			FireSound = WeaponDataRow->FireSound;
 			MuzzleFlash = WeaponDataRow->MuzzleFlash;
 			BoneToHide = WeaponDataRow->BoneToHide;
+			bAutomatic = WeaponDataRow->bAutomatic;
 			if (GetItemMesh())
 			{
 				if (BoneToHide != FName("")) GetItemMesh()->HideBoneByName(BoneToHide, EPhysBodyOp::PBO_None);

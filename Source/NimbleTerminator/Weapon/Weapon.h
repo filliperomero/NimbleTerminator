@@ -24,6 +24,9 @@ struct FWeaponDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 MagazineCapacity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bAutomatic;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class USoundCue* PickupSound;
@@ -113,6 +116,10 @@ private:
 	FTimerHandle ThrowWeaponTimer;
 	float ThrowWeaponTime = 0.7f;
 	bool bFalling = false;
+
+	// True for auto gunfire
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	bool bAutomatic { true };
 
 	/**
 	 * Ammo
@@ -210,6 +217,7 @@ public:
 	void ThrowWeapon();
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
 	FORCEINLINE int32 GetMagazineCapacity() const { return MagazineCapacity; }
+	FORCEINLINE bool IsWeaponAutomatic() const { return bAutomatic; }
 	void DecrementAmmo();
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 	FORCEINLINE EAmmoType GetAmmoType() const { return AmmoType; }
