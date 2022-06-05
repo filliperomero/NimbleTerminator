@@ -99,6 +99,24 @@ void AWeapon::Tick(float DeltaTime)
 		const FRotator MeshRotation(0.f, GetItemMesh()->GetComponentRotation().Yaw, 0.f);
 		GetItemMesh()->SetWorldRotation(MeshRotation, false, nullptr, ETeleportType::TeleportPhysics);
 	}
+
+	UpdateSlideDisplacement();
+}
+
+void AWeapon::UpdateSlideDisplacement()
+{
+	if (SlideDisplacementCurve == nullptr || !bMovingSlide) return;
+
+	const float ElapsedTime{ GetWorldTimerManager().GetTimerElapsed(SlideTimer) };
+	const float CurveValue{ SlideDisplacementCurve->GetFloatValue(ElapsedTime) };
+
+	SlideDisplacement = CurveValue * MaxSlideDisplacement;
+	RecoilRotation = CurveValue * MaxRecoilRotation;
+}
+
+void AWeapon::FinishMovingSlide()
+{
+	bMovingSlide = false;
 }
 
 void AWeapon::ThrowWeapon()
@@ -148,6 +166,12 @@ void AWeapon::ReloadAmmo(int32 Amount)
 bool AWeapon::IsClipFull() const
 {
 	return Ammo >= MagazineCapacity;
+}
+
+void AWeapon::StartSlideTimer()
+{
+	bMovingSlide = true;
+	GetWorldTimerManager().SetTimer(SlideTimer, this, &AWeapon::FinishMovingSlide, SlideDisplacementTime);
 }
 
 void AWeapon::StopFalling()

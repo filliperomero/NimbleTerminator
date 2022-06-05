@@ -484,6 +484,9 @@ void ANimbleTerminatorCharacter::FireWeapon()
 
 	EquippedWeapon->DecrementAmmo();
 	StartFireTimer();
+
+	if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Pistol)
+		EquippedWeapon->StartSlideTimer();
 }
 
 bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
