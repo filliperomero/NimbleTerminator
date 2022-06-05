@@ -384,15 +384,10 @@ void ANimbleTerminatorCharacter::FinishReloading()
 {
 	CombatState = ECombatState::ECS_Unoccupied;
 
-	if (bAimingButtonPressed)
-	{
-		Aim();
-	}
+	if (bAimingButtonPressed) Aim();
 
-	if (EquippedWeapon == nullptr)
-	{
-		return;
-	}
+	if (EquippedWeapon == nullptr) return;
+
 	const auto AmmoType = EquippedWeapon->GetAmmoType();
 
 	if (AmmoMap.Contains(AmmoType))
@@ -418,6 +413,8 @@ void ANimbleTerminatorCharacter::FinishReloading()
 void ANimbleTerminatorCharacter::FinishEquipping()
 {
 	CombatState = ECombatState::ECS_Unoccupied;
+
+	if (bAimingButtonPressed && !bAiming) Aim();
 }
 
 bool ANimbleTerminatorCharacter::HasCarriedAmmo()
@@ -590,10 +587,8 @@ void ANimbleTerminatorCharacter::FinishCrosshairBulletFire()
 void ANimbleTerminatorCharacter::AimingButtonPressed()
 {
 	bAimingButtonPressed = true;
-	if (CombatState != ECombatState::ECS_Reloading)
-	{
+	if (CombatState != ECombatState::ECS_Reloading && CombatState != ECombatState::ECS_Equipping)
 		Aim();
-	}
 }
 
 void ANimbleTerminatorCharacter::AimingButtonRelease()
@@ -955,6 +950,10 @@ void ANimbleTerminatorCharacter::ExchangeInventoryItems(int32 CurrentItemIndex, 
 		&& NewItemIndex < Inventory.Num()
 		&& (CombatState == ECombatState::ECS_Unoccupied || CombatState == ECombatState::ECS_Equipping))
 	{
+
+		if (bAiming)
+			StopAiming();
+		
 		auto OldEquippedWeapon = EquippedWeapon;
 		auto NewWeapon = Cast<AWeapon>(Inventory[NewItemIndex]);
 	
