@@ -15,7 +15,9 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "Components/WidgetComponent.h"
+#include "NimbleTerminator/NimbleTerminator.h"
 #include "NimbleTerminator/Weapon/Ammo.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 
 ANimbleTerminatorCharacter::ANimbleTerminatorCharacter() :
 	BaseTurnRate(45.f),
@@ -1004,6 +1006,20 @@ void ANimbleTerminatorCharacter::UnHighlightInventorySlot()
 {
 	HighlightIconDelegate.Broadcast(HighlightedSlot, false);
 	HighlightedSlot = -1;
+}
+
+EPhysicalSurface ANimbleTerminatorCharacter::GetSurfaceType()
+{
+	FHitResult HitResult;
+
+	const FVector Start{ GetActorLocation() };
+	const FVector End{ Start + FVector(0.f, 0.f, -400.f) };
+	FCollisionQueryParams QueryParams;
+	QueryParams.bReturnPhysicalMaterial = true;
+	
+	GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Visibility, QueryParams);
+
+	return UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
 }
 
 int32 ANimbleTerminatorCharacter::GetInterpLocationIndex()

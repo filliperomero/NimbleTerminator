@@ -159,6 +159,9 @@ protected:
 
 	void HighlightInventorySlot();
 
+	UFUNCTION(BlueprintCallable)
+	EPhysicalSurface GetSurfaceType();
+
 private:
 	// Camera boom positioning the camera behind the Character 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
