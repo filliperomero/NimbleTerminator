@@ -87,6 +87,12 @@ struct FWeaponDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName BoneToHide;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Damage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float HeadShotDamage;
 };
 
 /**
@@ -213,6 +219,14 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Pistol, meta = (AllowPrivateAccess = "true"))
 	bool bMovingSlide { false };
 
+	/** Damage */
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	float Damage { 20.f };
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties", meta = (AllowPrivateAccess = "true"))
+	float HeadShotDamage { 40.f };
+
 public:
 	void ThrowWeapon();
 	FORCEINLINE int32 GetAmmo() const { return Ammo; }
@@ -229,6 +243,8 @@ public:
 	FORCEINLINE float GetAutoFireRate() const { return AutoFireRate; }
 	FORCEINLINE UParticleSystem* GetMuzzleFlash() const { return MuzzleFlash; }
 	FORCEINLINE USoundCue* GetFireSound() const { return FireSound; }
+	FORCEINLINE float GetDamage() const { return Damage; }
+	FORCEINLINE float GetHeadShotDamage() const { return HeadShotDamage; }
 
 	void ReloadAmmo(int32 Amount);
 	bool IsClipFull() const;

@@ -16,6 +16,7 @@
 #include "Sound/SoundCue.h"
 #include "Components/WidgetComponent.h"
 #include "NimbleTerminator/NimbleTerminator.h"
+#include "NimbleTerminator/Enemy/Enemy.h"
 #include "NimbleTerminator/Interfaces/BulletHitInterface.h"
 #include "NimbleTerminator/Weapon/Ammo.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
@@ -578,6 +579,10 @@ void ANimbleTerminatorCharacter::SendBullet()
 								Beam->SetVectorParameter(FName("Target"), BeamHitResult.Location);
 						}
 					}
+
+					AEnemy* HitEnemy = Cast<AEnemy>(BeamHitResult.GetActor());
+					if (HitEnemy)
+						UGameplayStatics::ApplyDamage(BeamHitResult.GetActor(), EquippedWeapon->GetDamage(), GetController(), this, UDamageType::StaticClass());
 				}				
 			}
 		}
