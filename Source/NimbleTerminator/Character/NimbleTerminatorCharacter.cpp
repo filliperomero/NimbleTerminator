@@ -16,6 +16,7 @@
 #include "Sound/SoundCue.h"
 #include "Components/WidgetComponent.h"
 #include "NimbleTerminator/NimbleTerminator.h"
+#include "NimbleTerminator/Interfaces/BulletHitInterface.h"
 #include "NimbleTerminator/Weapon/Ammo.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 
@@ -487,9 +488,10 @@ void ANimbleTerminatorCharacter::FireWeapon()
 		EquippedWeapon->StartSlideTimer();
 }
 
-bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation)
+bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutHitResult)
 {
 	FHitResult CrosshairHitResult;
+	FVector OutBeamLocation;
 	bool bCrosshairHit = TraceUnderCrosshairs(CrosshairHitResult, OutBeamLocation);
 
 	if (bCrosshairHit)
@@ -498,22 +500,21 @@ bool ANimbleTerminatorCharacter::GetBeamEndLocation(const FVector& MuzzleSocketL
 	}
 
 	// Perform a second trace, this time from the gun barrel
-	FHitResult WeaponTraceHit;
 	const FVector WeaponTraceStart(MuzzleSocketLocation);
 	const FVector StartToEnd(OutBeamLocation - MuzzleSocketLocation);
 	// Increase by 25%
 	const FVector WeaponTraceEnd(MuzzleSocketLocation + StartToEnd * 1.25f);
 
-	GetWorld()->LineTraceSingleByChannel(WeaponTraceHit, WeaponTraceStart, WeaponTraceEnd, ECC_Visibility);
+	GetWorld()->LineTraceSingleByChannel(OutHitResult, WeaponTraceStart, WeaponTraceEnd, ECC_Visibility);
 
 	// Object between barrel and BeamEndPOint
-	if (WeaponTraceHit.bBlockingHit)
+	if (!OutHitResult.bBlockingHit)
 	{
-		OutBeamLocation = WeaponTraceHit.ImpactPoint;
-		return true;
+		OutHitResult.Location = OutBeamLocation;
+		return false;
 	}
 
-	return false;
+	return true;
 }
 
 void ANimbleTerminatorCharacter::PlayFireSound()
@@ -548,27 +549,36 @@ void ANimbleTerminatorCharacter::SendBullet()
 		{
 			if (EquippedWeapon->GetMuzzleFlash())
 				UGameplayStatics::SpawnEmitterAtLocation(World, EquippedWeapon->GetMuzzleFlash(), SocketTransform);
-
-			FVector BeamEnd;
-			bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamEnd);
+			
+			FHitResult BeamHitResult;
+			bool bBeamEnd = GetBeamEndLocation(SocketTransform.GetLocation(), BeamHitResult);
 
 			if (bBeamEnd)
 			{
-				if (ImpactParticles)
+				if (BeamHitResult.GetActor())
 				{
-					UGameplayStatics::SpawnEmitterAtLocation(World, ImpactParticles, BeamEnd);
-				}
-
-				if (BeamParticles)
-				{
-					UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
-						World, BeamParticles, SocketTransform);
-
-					if (Beam)
+					// Check if the actor that we hit implement BulletHitInterface
+					// TODO: Is there a better way to check this?
+					IBulletHitInterface* BulletHitInterface = Cast<IBulletHitInterface>(BeamHitResult.GetActor());
+					if (BulletHitInterface)
 					{
-						Beam->SetVectorParameter(FName("Target"), BeamEnd);
+						BulletHitInterface->BulletHit_Implementation(BeamHitResult);
 					}
-				}
+					else
+					{
+						if (ImpactParticles)
+							UGameplayStatics::SpawnEmitterAtLocation(World, ImpactParticles, BeamHitResult.Location);
+
+						if (BeamParticles)
+						{
+							UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+								World, BeamParticles, SocketTransform);
+
+							if (Beam)
+								Beam->SetVectorParameter(FName("Target"), BeamHitResult.Location);
+						}
+					}
+				}				
 			}
 		}
 	}

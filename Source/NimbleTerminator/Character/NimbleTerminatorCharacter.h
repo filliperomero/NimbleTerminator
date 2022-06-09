@@ -80,7 +80,7 @@ protected:
 	void PlayGunfireMontage();
 	void SendBullet();
 
-	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
+	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FHitResult& OutHitResult);
 
 	// Set bAiming to true/false with button press
 	void AimingButtonPressed();
