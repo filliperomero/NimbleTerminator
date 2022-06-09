@@ -582,7 +582,13 @@ void ANimbleTerminatorCharacter::SendBullet()
 
 					AEnemy* HitEnemy = Cast<AEnemy>(BeamHitResult.GetActor());
 					if (HitEnemy)
-						UGameplayStatics::ApplyDamage(BeamHitResult.GetActor(), EquippedWeapon->GetDamage(), GetController(), this, UDamageType::StaticClass());
+					{
+						float Damage = BeamHitResult.BoneName.ToString() == HitEnemy->GetHeadBone()
+							? EquippedWeapon->GetHeadShotDamage()
+							: EquippedWeapon->GetDamage();
+						
+						UGameplayStatics::ApplyDamage(BeamHitResult.GetActor(), Damage, GetController(), this, UDamageType::StaticClass());
+					}
 				}				
 			}
 		}

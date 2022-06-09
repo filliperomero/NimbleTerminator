@@ -26,6 +26,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+private:
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UParticleSystem* ImpactParticles;
 
@@ -40,6 +42,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float MaxHealth { 100.f };
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	FString HeadBone { TEXT("head") };
+
 public:
+	FORCEINLINE FString GetHeadBone() const { return HeadBone; }
 
 };
