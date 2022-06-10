@@ -583,11 +583,14 @@ void ANimbleTerminatorCharacter::SendBullet()
 					AEnemy* HitEnemy = Cast<AEnemy>(BeamHitResult.GetActor());
 					if (HitEnemy)
 					{
-						float Damage = BeamHitResult.BoneName.ToString() == HitEnemy->GetHeadBone()
+						const bool IsHeadShot = BeamHitResult.BoneName.ToString() == HitEnemy->GetHeadBone();
+						const float Damage = IsHeadShot
 							? EquippedWeapon->GetHeadShotDamage()
 							: EquippedWeapon->GetDamage();
 						
 						UGameplayStatics::ApplyDamage(BeamHitResult.GetActor(), Damage, GetController(), this, UDamageType::StaticClass());
+
+						HitEnemy->ShowHitNumber(Damage, BeamHitResult.Location, IsHeadShot);
 					}
 				}				
 			}
