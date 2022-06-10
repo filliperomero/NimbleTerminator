@@ -58,7 +58,8 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 {
 	if (Health - DamageAmount <= 0.f)
 	{
-		Health = 0.f;		
+		Health = 0.f;
+		Die();
 	}
 	else
 	{
@@ -67,4 +68,10 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 
 	return DamageAmount;
 }
+
+void AEnemy::Die()
+{
+	HideHealthBar();
+}
+
 
