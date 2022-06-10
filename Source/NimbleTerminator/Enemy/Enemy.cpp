@@ -28,6 +28,12 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+void AEnemy::ShowHealthBar_Implementation()
+{
+	GetWorldTimerManager().ClearTimer(HealthBarTimer);
+	GetWorldTimerManager().SetTimer(HealthBarTimer, this, &ThisClass::HideHealthBar, HealthBarDisplayTime);
+}
+
 void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 {
 	if (ImpactSound)
@@ -43,6 +49,8 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 			true
 			);
 	}
+
+	ShowHealthBar();
 }
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
