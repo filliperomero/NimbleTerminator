@@ -34,6 +34,7 @@ protected:
 	void HideHealthBar();
 
 	void Die();
+	void PlayHitMontage(FName Section, float PlayRate = 1.f);
 
 private:
 
@@ -42,6 +43,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	USoundCue* ImpactSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* HitMontage;
 
 	/** Stats */
 

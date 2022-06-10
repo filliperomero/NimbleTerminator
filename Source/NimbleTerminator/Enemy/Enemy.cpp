@@ -51,6 +51,7 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 	}
 
 	ShowHealthBar();
+	PlayHitMontage(FName("HitReactFront"));
 }
 
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
@@ -72,6 +73,18 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 void AEnemy::Die()
 {
 	HideHealthBar();
+}
+
+void AEnemy::PlayHitMontage(FName Section, float PlayRate)
+{
+	if (HitMontage == nullptr) return;
+	
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Play(HitMontage, PlayRate);
+		AnimInstance->Montage_JumpToSection(Section, HitMontage);
+	}
 }
 
 
