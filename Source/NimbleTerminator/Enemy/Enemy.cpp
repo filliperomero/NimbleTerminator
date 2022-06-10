@@ -77,7 +77,7 @@ void AEnemy::Die()
 
 void AEnemy::PlayHitMontage(FName Section, float PlayRate)
 {
-	if (HitMontage == nullptr) return;
+	if (HitMontage == nullptr || !bCanHitReact) return;
 	
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance)
@@ -85,6 +85,14 @@ void AEnemy::PlayHitMontage(FName Section, float PlayRate)
 		AnimInstance->Montage_Play(HitMontage, PlayRate);
 		AnimInstance->Montage_JumpToSection(Section, HitMontage);
 	}
+
+	bCanHitReact = false;
+	GetWorldTimerManager().SetTimer(HitReactTimer, this, &ThisClass::ResetHitReactTimer, FMath::RandRange(HitReactTimeMin, HitReactTimeMax));
+}
+
+void AEnemy::ResetHitReactTimer()
+{
+	bCanHitReact = true;
 }
 
 

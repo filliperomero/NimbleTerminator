@@ -35,6 +35,7 @@ protected:
 
 	void Die();
 	void PlayHitMontage(FName Section, float PlayRate = 1.f);
+	void ResetHitReactTimer();
 
 private:
 
@@ -44,8 +45,20 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	USoundCue* ImpactSound;
 
+	/** Hit Animation*/
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* HitMontage;
+
+	FTimerHandle HitReactTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float HitReactTimeMin { 0.5f };
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float HitReactTimeMax { 0.75f };
+
+	bool bCanHitReact { true };
 
 	/** Stats */
 
