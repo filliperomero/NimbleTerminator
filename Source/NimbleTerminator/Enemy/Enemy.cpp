@@ -3,8 +3,11 @@
 
 #include "Enemy.h"
 
+#include "EnemyController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Sound/SoundCue.h"
 
 AEnemy::AEnemy()
@@ -17,6 +20,17 @@ void AEnemy::BeginPlay()
 	Super::BeginPlay();
 
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
+	EnemyController = Cast<AEnemyController>(GetController());
+	
+	// Local space to World space
+	const FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(GetActorTransform(), PatrolPoint);
+
+	if (EnemyController && EnemyController->GetBlackboard())
+	{
+		EnemyController->GetBlackboard()->SetValueAsVector(TEXT("PatrolPoint"), WorldPatrolPoint);
+		EnemyController->RunBehaviorTree(BehaviorTree);
+	}
 }
 
 void AEnemy::Tick(float DeltaTime)

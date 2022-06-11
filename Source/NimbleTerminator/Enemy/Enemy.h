@@ -10,6 +10,7 @@
 class UParticleSystem;
 class USoundCue;
 class UBehaviorTree;
+class AEnemyController;
 
 UCLASS()
 class NIMBLETERMINATOR_API AEnemy : public ACharacter, public IBulletHitInterface
@@ -95,8 +96,16 @@ private:
 	float HealthBarDisplayTime { 4.f };
 	
 	/** AI */
+	
 	UPROPERTY(EditAnywhere, Category = AI)
 	UBehaviorTree* BehaviorTree;
+
+	UPROPERTY()
+	AEnemyController* EnemyController;
+
+	// Point for the enemy to move to
+	UPROPERTY(EditAnywhere, Category = AI, meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
+	FVector PatrolPoint;
 
 public:
 	FORCEINLINE FString GetHeadBone() const { return HeadBone; }
