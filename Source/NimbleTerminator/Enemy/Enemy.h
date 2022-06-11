@@ -9,6 +9,7 @@
 
 class UParticleSystem;
 class USoundCue;
+class UBehaviorTree;
 
 UCLASS()
 class NIMBLETERMINATOR_API AEnemy : public ACharacter, public IBulletHitInterface
@@ -92,9 +93,14 @@ private:
 	// Time to display health bar once shot
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float HealthBarDisplayTime { 4.f };
+	
+	/** AI */
+	UPROPERTY(EditAnywhere, Category = AI)
+	UBehaviorTree* BehaviorTree;
 
 public:
 	FORCEINLINE FString GetHeadBone() const { return HeadBone; }
+	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowHitNumber(int32 Damage, FVector HitLocation, bool bHeadShot);
