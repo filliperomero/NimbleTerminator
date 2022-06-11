@@ -25,10 +25,12 @@ void AEnemy::BeginPlay()
 	
 	// Local space to World space
 	const FVector WorldPatrolPoint = UKismetMathLibrary::TransformLocation(GetActorTransform(), PatrolPoint);
+	const FVector WorldPatrolPoint2 = UKismetMathLibrary::TransformLocation(GetActorTransform(), PatrolPoint2);
 
 	if (EnemyController && EnemyController->GetBlackboard())
 	{
 		EnemyController->GetBlackboard()->SetValueAsVector(TEXT("PatrolPoint"), WorldPatrolPoint);
+		EnemyController->GetBlackboard()->SetValueAsVector(TEXT("PatrolPoint2"), WorldPatrolPoint2);
 		EnemyController->RunBehaviorTree(BehaviorTree);
 	}
 }

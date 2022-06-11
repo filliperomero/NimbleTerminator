@@ -107,6 +107,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = AI, meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
 	FVector PatrolPoint;
 
+	UPROPERTY(EditAnywhere, Category = AI, meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
+	FVector PatrolPoint2;
+
 public:
 	FORCEINLINE FString GetHeadBone() const { return HeadBone; }
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
