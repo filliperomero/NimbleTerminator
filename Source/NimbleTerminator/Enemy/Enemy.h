@@ -58,6 +58,9 @@ protected:
 		FHitResult& SweepResult
 	);
 
+	UFUNCTION(BlueprintCallable)
+	void SetStunned(bool Stunned);
+
 private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
@@ -105,6 +108,14 @@ private:
 	// Time to display health bar once shot
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float HealthBarDisplayTime { 4.f };
+
+	// True when playing the get hit animation
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Stats, meta = (AllowPrivateAccess = "true"))
+	bool bStunned { false };
+
+	// Chance of being stunned. 0: no stun chance, 1: 100% stun chance
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stats, meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "1"))
+	float StunChance { 0.2f };
 	
 	/** AI */
 	
