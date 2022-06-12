@@ -6,6 +6,7 @@
 #include "EnemyController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -19,6 +20,10 @@ AEnemy::AEnemy()
 	AggroSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AggroSphere"));
 	AggroSphere->SetupAttachment(GetRootComponent());
 	AggroSphere->SetSphereRadius(450.f);
+	
+	CombatRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CombatRangeSphere"));
+	CombatRangeSphere->SetupAttachment(GetRootComponent());
+	CombatRangeSphere->SetSphereRadius(150.f);
 }
 
 void AEnemy::BeginPlay()
@@ -28,7 +33,20 @@ void AEnemy::BeginPlay()
 	if (AggroSphere)
 		AggroSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::AggroSphereOverlap);
 
-	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	if (CombatRangeSphere)
+	{
+		CombatRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::CombatRangeOverlap);
+		CombatRangeSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::CombatRangeEndOverlap);
+	}
+
+	if (GetMesh())
+	{
+		GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+		GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	}
+	
+	if (GetCapsuleComponent())
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 
 	EnemyController = Cast<AEnemyController>(GetController());
 	
@@ -173,11 +191,81 @@ void AEnemy::AggroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 	}
 }
 
+void AEnemy::CombatRangeOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor == nullptr) return;
+
+	auto Character = Cast<ANimbleTerminatorCharacter>(OtherActor);
+
+	if (Character)
+	{
+		bInAttackRange = true;
+		
+		if (EnemyController && EnemyController->GetBlackboard())
+			EnemyController->GetBlackboard()->SetValueAsBool(TEXT("InAttackRange"), true);
+	}
+}
+
+void AEnemy::CombatRangeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (OtherActor == nullptr) return;
+
+	auto Character = Cast<ANimbleTerminatorCharacter>(OtherActor);
+
+	if (Character)
+	{
+		bInAttackRange = false;
+		
+		if (EnemyController && EnemyController->GetBlackboard())
+			EnemyController->GetBlackboard()->SetValueAsBool(TEXT("InAttackRange"), false);
+	}
+}
+
 void AEnemy::SetStunned(bool Stunned)
 {
 	bStunned = Stunned;
 	if (EnemyController && EnemyController->GetBlackboard())
 		EnemyController->GetBlackboard()->SetValueAsBool(TEXT("Stunned"), Stunned);
+}
+
+void AEnemy::PlayAttackMontage(FName Section, float PlayRate)
+{
+	if (AttackMontage == nullptr) return;
+	
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Play(AttackMontage, PlayRate);
+		AnimInstance->Montage_JumpToSection(Section, AttackMontage);
+	}
+}
+
+FName AEnemy::GetAttackSectionName()
+{
+	FName SectionName;
+	const int32 Section = FMath::RandRange(1, 4);
+	
+	switch (Section)
+	{
+	case 1:
+		SectionName = AttackLFast;
+		break;
+	case 2:
+		SectionName = AttackRFast;
+		break;
+	case 3:
+		SectionName = AttackL;
+		break;
+	case 4:
+		SectionName = AttackR;
+		break;
+	default:
+		SectionName = AttackLFast;
+	}
+
+	return SectionName;
 }
 
 

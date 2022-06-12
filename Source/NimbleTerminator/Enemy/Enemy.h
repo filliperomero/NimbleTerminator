@@ -58,8 +58,32 @@ protected:
 		FHitResult& SweepResult
 	);
 
+	UFUNCTION()
+	void CombatRangeOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep, const
+		FHitResult& SweepResult
+	);
+
+	UFUNCTION()
+	void CombatRangeEndOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex
+	);
+
 	UFUNCTION(BlueprintCallable)
 	void SetStunned(bool Stunned);
+
+	UFUNCTION(BlueprintCallable)
+	void PlayAttackMontage(FName Section, float PlayRate = 1.f);
+
+	UFUNCTION(BlueprintPure)
+	FName GetAttackSectionName();
 
 private:
 
@@ -108,11 +132,7 @@ private:
 	// Time to display health bar once shot
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float HealthBarDisplayTime { 4.f };
-
-	// True when playing the get hit animation
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Stats, meta = (AllowPrivateAccess = "true"))
-	bool bStunned { false };
-
+	
 	// Chance of being stunned. 0: no stun chance, 1: 100% stun chance
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stats, meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "1"))
 	float StunChance { 0.2f };
@@ -132,8 +152,29 @@ private:
 	UPROPERTY(EditAnywhere, Category = AI, meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
 	FVector PatrolPoint2;
 
+	// True when playing the get hit animation
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AI, meta = (AllowPrivateAccess = "true"))
+	bool bStunned { false };
+
+	// True when it attack range
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = AI, meta = (AllowPrivateAccess = "true"))
+	bool bInAttackRange { false };
+
 	UPROPERTY(EditAnywhere, Category = Combat)
 	USphereComponent* AggroSphere;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	USphereComponent* CombatRangeSphere;
+
+	/** Attack */
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* AttackMontage;
+	
+	FName AttackLFast { TEXT("AttackLFast") };
+	FName AttackRFast { TEXT("AttackRFast") };
+	FName AttackL { TEXT("AttackL") };
+	FName AttackR { TEXT("AttackR") };
 
 public:
 	FORCEINLINE FString GetHeadBone() const { return HeadBone; }
