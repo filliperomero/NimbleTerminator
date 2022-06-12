@@ -6,18 +6,27 @@
 #include "EnemyController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "NimbleTerminator/Character/NimbleTerminatorCharacter.h"
 #include "Sound/SoundCue.h"
 
 AEnemy::AEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	AggroSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AggroSphere"));
+	AggroSphere->SetupAttachment(GetRootComponent());
+	AggroSphere->SetSphereRadius(450.f);
 }
 
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (AggroSphere)
+		AggroSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::AggroSphereOverlap);
 
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
@@ -144,6 +153,18 @@ void AEnemy::UpdateHitNumbers()
 		UGameplayStatics::ProjectWorldToScreen(GetWorld()->GetFirstPlayerController(), Location, ScreenPosition);
 
 		HitNumber->SetPositionInViewport(ScreenPosition);
+	}
+}
+
+void AEnemy::AggroSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor == nullptr) return;
+	
+	auto Character = Cast<ANimbleTerminatorCharacter>(OtherActor);
+	if (Character && EnemyController && EnemyController->GetBlackboard())
+	{
+		EnemyController->GetBlackboard()->SetValueAsObject(TEXT("Target"), Character);
 	}
 }
 

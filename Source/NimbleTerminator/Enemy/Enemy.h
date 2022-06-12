@@ -11,6 +11,7 @@ class UParticleSystem;
 class USoundCue;
 class UBehaviorTree;
 class AEnemyController;
+class USphereComponent;
 
 UCLASS()
 class NIMBLETERMINATOR_API AEnemy : public ACharacter, public IBulletHitInterface
@@ -46,6 +47,16 @@ protected:
 	void DestroyHitNumber(UUserWidget* HitNumber);
 
 	void UpdateHitNumbers();
+
+	UFUNCTION()
+	void AggroSphereOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep, const
+		FHitResult& SweepResult
+	);
 
 private:
 
@@ -109,6 +120,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = AI, meta = (AllowPrivateAccess = "true", MakeEditWidget = "true"))
 	FVector PatrolPoint2;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	USphereComponent* AggroSphere;
 
 public:
 	FORCEINLINE FString GetHeadBone() const { return HeadBone; }
