@@ -46,6 +46,12 @@ public:
 	ANimbleTerminatorCharacter();
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual float TakeDamage(
+		float DamageAmount,
+		FDamageEvent const& DamageEvent,
+		AController* EventInstigator,
+		AActor* DamageCauser
+	) override;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -416,6 +422,15 @@ private:
 	// The index for the currently highlighted slot
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Inventory, meta = (AllowPrivateAccess = "true"))
 	int32 HighlightedSlot = -1;
+
+	/**
+	 * Stats
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
+	float Health { 100.f };
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
+	float MaxHealth { 100.f };
 	
 public:
 

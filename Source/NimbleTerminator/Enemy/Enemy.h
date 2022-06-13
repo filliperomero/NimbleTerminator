@@ -12,6 +12,7 @@ class USoundCue;
 class UBehaviorTree;
 class AEnemyController;
 class USphereComponent;
+class UBoxComponent;
 
 UCLASS()
 class NIMBLETERMINATOR_API AEnemy : public ACharacter, public IBulletHitInterface
@@ -54,8 +55,8 @@ protected:
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex,
-		bool bFromSweep, const
-		FHitResult& SweepResult
+		bool bFromSweep,
+		const FHitResult& SweepResult
 	);
 
 	UFUNCTION()
@@ -64,8 +65,8 @@ protected:
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex,
-		bool bFromSweep, const
-		FHitResult& SweepResult
+		bool bFromSweep,
+		const FHitResult& SweepResult
 	);
 
 	UFUNCTION()
@@ -84,6 +85,42 @@ protected:
 
 	UFUNCTION(BlueprintPure)
 	FName GetAttackSectionName();
+	
+	UFUNCTION()
+	void OnLeftWeaponOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+
+	UFUNCTION()
+	void OnRightWeaponOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+
+	void DoDamage(AActor* Victim);
+
+	// Activate/Deactivate collision for the Weapon
+	// TODO: Create one function to deal with everything
+	UFUNCTION(BlueprintCallable)
+	void ActivateLeftWeapon();
+	
+	UFUNCTION(BlueprintCallable)
+	void DeactivateLeftWeapon();
+	
+	UFUNCTION(BlueprintCallable)
+	void ActivateRightWeapon();
+	
+	UFUNCTION(BlueprintCallable)
+	void DeactivateRightWeapon(); 
 
 private:
 
@@ -116,7 +153,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	float HitNumberDestroyTime { 1.5f };
 
-	/** Stats */
+	/**
+	 * Stats
+	 */
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float Health { 100.f };
@@ -136,6 +175,9 @@ private:
 	// Chance of being stunned. 0: no stun chance, 1: 100% stun chance
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stats, meta = (AllowPrivateAccess = "true", ClampMin = "0", ClampMax = "1"))
 	float StunChance { 0.2f };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stats, meta = (AllowPrivateAccess = "true"))
+	float BaseDamage { 20.f };
 	
 	/** AI */
 	
@@ -175,6 +217,14 @@ private:
 	FName AttackRFast { TEXT("AttackRFast") };
 	FName AttackL { TEXT("AttackL") };
 	FName AttackR { TEXT("AttackR") };
+
+	// Collision volume for the left weapon
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* LeftWeaponCollision;
+	
+	// Collision volume for the right weapon
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* RightWeaponCollision;
 
 public:
 	FORCEINLINE FString GetHeadBone() const { return HeadBone; }

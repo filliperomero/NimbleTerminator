@@ -6,6 +6,7 @@
 #include "EnemyController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -23,7 +24,14 @@ AEnemy::AEnemy()
 	
 	CombatRangeSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CombatRangeSphere"));
 	CombatRangeSphere->SetupAttachment(GetRootComponent());
-	CombatRangeSphere->SetSphereRadius(150.f);
+	CombatRangeSphere->SetSphereRadius(180.f);
+
+	// Construct left/right weapon collision boxes
+	LeftWeaponCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Left Weapon Box"));
+	LeftWeaponCollision->SetupAttachment(GetMesh(), FName("LeftWeaponBone"));
+
+	RightWeaponCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Right Weapon Box"));
+	RightWeaponCollision->SetupAttachment(GetMesh(), FName("RightWeaponBone"));
 }
 
 void AEnemy::BeginPlay()
@@ -37,6 +45,26 @@ void AEnemy::BeginPlay()
 	{
 		CombatRangeSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::CombatRangeOverlap);
 		CombatRangeSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::CombatRangeEndOverlap);
+	}
+
+	if (LeftWeaponCollision)
+	{
+		LeftWeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnLeftWeaponOverlap);
+		// Set collision presets for weapon boxes
+		LeftWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		LeftWeaponCollision->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+		LeftWeaponCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		LeftWeaponCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	}
+
+	if (RightWeaponCollision)
+	{
+		RightWeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnRightWeaponOverlap);
+		// Set collision presets for weapon boxes
+		RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		RightWeaponCollision->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+		RightWeaponCollision->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+		RightWeaponCollision->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	}
 
 	if (GetMesh())
@@ -266,6 +294,47 @@ FName AEnemy::GetAttackSectionName()
 	}
 
 	return SectionName;
+}
+
+void AEnemy::DoDamage(AActor* Victim)
+{
+	if (Victim == nullptr) return;
+
+	auto Character = Cast<ANimbleTerminatorCharacter>(Victim);
+	if (Character)
+		UGameplayStatics::ApplyDamage(Character, BaseDamage, EnemyController, this, UDamageType::StaticClass());
+}
+
+void AEnemy::OnLeftWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	DoDamage(OtherActor);
+}
+
+void AEnemy::OnRightWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	DoDamage(OtherActor);
+}
+
+void AEnemy::ActivateLeftWeapon()
+{
+	LeftWeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void AEnemy::DeactivateLeftWeapon()
+{
+	LeftWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AEnemy::ActivateRightWeapon()
+{
+	RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void AEnemy::DeactivateRightWeapon()
+{
+	RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 

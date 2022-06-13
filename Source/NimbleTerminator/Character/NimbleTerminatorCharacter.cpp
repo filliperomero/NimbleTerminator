@@ -285,6 +285,21 @@ void ANimbleTerminatorCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	PlayerInputComponent->BindAction("5Key", IE_Pressed, this, &ThisClass::FiveKeyPressed);
 }
 
+float ANimbleTerminatorCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+	AController* EventInstigator, AActor* DamageCauser)
+{
+	if (Health - DamageAmount <= 0.f)
+	{
+		Health = 0.f;
+	}
+	else
+	{
+		Health -= DamageAmount;
+	}
+
+	return DamageAmount;
+}
+
 void ANimbleTerminatorCharacter::MoveForward(float Value)
 {
 	if (Controller == nullptr || Value == 0.f)
