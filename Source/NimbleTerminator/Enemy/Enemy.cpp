@@ -87,6 +87,7 @@ void AEnemy::BeginPlay()
 	{
 		EnemyController->GetBlackboard()->SetValueAsVector(TEXT("PatrolPoint"), WorldPatrolPoint);
 		EnemyController->GetBlackboard()->SetValueAsVector(TEXT("PatrolPoint2"), WorldPatrolPoint2);
+		EnemyController->GetBlackboard()->SetValueAsBool(TEXT("CanAttack"), true);
 		EnemyController->RunBehaviorTree(BehaviorTree);
 	}
 }
@@ -269,6 +270,10 @@ void AEnemy::PlayAttackMontage(FName Section, float PlayRate)
 		AnimInstance->Montage_Play(AttackMontage, PlayRate);
 		AnimInstance->Montage_JumpToSection(Section, AttackMontage);
 	}
+	bCanAttack = false;
+	GetWorldTimerManager().SetTimer(AttackWaitTimer, this, &ThisClass::ResetCanAttack, AttackWaitTime);
+	if (EnemyController && EnemyController->GetBlackboard())
+		EnemyController->GetBlackboard()->SetValueAsBool(TEXT("CanAttack"), false);
 }
 
 FName AEnemy::GetAttackSectionName()
@@ -360,6 +365,13 @@ void AEnemy::ActivateRightWeapon()
 void AEnemy::DeactivateRightWeapon()
 {
 	RightWeaponCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AEnemy::ResetCanAttack()
+{
+	bCanAttack = true;
+	if (EnemyController && EnemyController->GetBlackboard())
+		EnemyController->GetBlackboard()->SetValueAsBool(TEXT("CanAttack"), true);
 }
 
 void AEnemy::AttempToStunCaracter(ANimbleTerminatorCharacter* Victim)

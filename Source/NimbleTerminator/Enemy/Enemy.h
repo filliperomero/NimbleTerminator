@@ -124,6 +124,8 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void DeactivateRightWeapon();
 
+	void ResetCanAttack();
+
 	void AttempToStunCaracter(ANimbleTerminatorCharacter* Victim);
 
 private:
@@ -235,6 +237,14 @@ private:
 	// Collision volume for the right weapon
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	UBoxComponent* RightWeaponCollision;
+
+	UPROPERTY(VisibleAnywhere, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	bool bCanAttack { true };
+
+	UPROPERTY(EditAnywhere, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float AttackWaitTime { 1.f };
+
+	FTimerHandle AttackWaitTimer;
 
 public:
 	FORCEINLINE FString GetHeadBone() const { return HeadBone; }
