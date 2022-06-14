@@ -401,6 +401,8 @@ void ANimbleTerminatorCharacter::ReloadWeapon()
 
 void ANimbleTerminatorCharacter::FinishReloading()
 {
+	if (CombatState == ECombatState::ECS_Stunned) return;
+	
 	CombatState = ECombatState::ECS_Unoccupied;
 
 	if (bAimingButtonPressed) Aim();
@@ -431,6 +433,8 @@ void ANimbleTerminatorCharacter::FinishReloading()
 
 void ANimbleTerminatorCharacter::FinishEquipping()
 {
+	if (CombatState == ECombatState::ECS_Stunned) return;
+	
 	CombatState = ECombatState::ECS_Unoccupied;
 
 	if (bAimingButtonPressed && !bAiming) Aim();
@@ -474,6 +478,8 @@ void ANimbleTerminatorCharacter::StartFireTimer()
 
 void ANimbleTerminatorCharacter::FireTimerFinished()
 {
+	if (CombatState == ECombatState::ECS_Stunned) return;
+	
 	CombatState = ECombatState::ECS_Unoccupied;
 
 	if (EquippedWeapon == nullptr) return;
@@ -628,7 +634,7 @@ void ANimbleTerminatorCharacter::FinishCrosshairBulletFire()
 void ANimbleTerminatorCharacter::AimingButtonPressed()
 {
 	bAimingButtonPressed = true;
-	if (CombatState != ECombatState::ECS_Reloading && CombatState != ECombatState::ECS_Equipping)
+	if (CombatState != ECombatState::ECS_Reloading && CombatState != ECombatState::ECS_Equipping && CombatState != ECombatState::ECS_Stunned)
 		Aim();
 }
 
@@ -1059,6 +1065,24 @@ EPhysicalSurface ANimbleTerminatorCharacter::GetSurfaceType()
 	GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECollisionChannel::ECC_Visibility, QueryParams);
 
 	return UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
+}
+
+void ANimbleTerminatorCharacter::Stun()
+{
+	CombatState = ECombatState::ECS_Stunned;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && HitReactMontage)
+	{
+		AnimInstance->Montage_Play(HitReactMontage);
+	}
+}
+
+void ANimbleTerminatorCharacter::EndStun()
+{
+	CombatState = ECombatState::ECS_Unoccupied;
+
+	if (bAimingButtonPressed) Aim();
 }
 
 int32 ANimbleTerminatorCharacter::GetInterpLocationIndex()
