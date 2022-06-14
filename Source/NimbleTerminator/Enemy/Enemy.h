@@ -13,6 +13,7 @@ class UBehaviorTree;
 class AEnemyController;
 class USphereComponent;
 class UBoxComponent;
+class ANimbleTerminatorCharacter;
 
 UCLASS()
 class NIMBLETERMINATOR_API AEnemy : public ACharacter, public IBulletHitInterface
@@ -106,7 +107,8 @@ protected:
 		const FHitResult& SweepResult
 	);
 
-	void DoDamage(AActor* Victim);
+	void DoDamage(ANimbleTerminatorCharacter* Victim);
+	void SpawnBlood(ANimbleTerminatorCharacter* Victim, FName SocketName);
 
 	// Activate/Deactivate collision for the Weapon
 	// TODO: Create one function to deal with everything
@@ -120,7 +122,7 @@ protected:
 	void ActivateRightWeapon();
 	
 	UFUNCTION(BlueprintCallable)
-	void DeactivateRightWeapon(); 
+	void DeactivateRightWeapon();
 
 private:
 
@@ -217,6 +219,12 @@ private:
 	FName AttackRFast { TEXT("AttackRFast") };
 	FName AttackL { TEXT("AttackL") };
 	FName AttackR { TEXT("AttackR") };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	FName LeftWeaponSocket { TEXT("FX_Trail_L_01") };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	FName RightWeaponSocket { TEXT("FX_Trail_R_01") };
 
 	// Collision volume for the left weapon
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))

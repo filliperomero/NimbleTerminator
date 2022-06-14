@@ -9,6 +9,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "NimbleTerminator/Character/NimbleTerminatorCharacter.h"
@@ -296,30 +297,47 @@ FName AEnemy::GetAttackSectionName()
 	return SectionName;
 }
 
-void AEnemy::DoDamage(AActor* Victim)
+void AEnemy::DoDamage(ANimbleTerminatorCharacter* Victim)
 {
 	if (Victim == nullptr) return;
+	
+	UGameplayStatics::ApplyDamage(Victim, BaseDamage, EnemyController, this, UDamageType::StaticClass());
 
-	auto Character = Cast<ANimbleTerminatorCharacter>(Victim);
-	if (Character)
+	if (Victim->GetMeleeImpactSound())
+		UGameplayStatics::PlaySoundAtLocation(this, Victim->GetMeleeImpactSound(), GetActorLocation());
+}
+
+void AEnemy::SpawnBlood(ANimbleTerminatorCharacter* Victim, FName SocketName)
+{
+	const USkeletalMeshSocket* TipSocket { GetMesh()->GetSocketByName(SocketName) };
+	if (TipSocket)
 	{
-		UGameplayStatics::ApplyDamage(Character, BaseDamage, EnemyController, this, UDamageType::StaticClass());
-
-		if (Character->GetMeleeImpactSound())
-			UGameplayStatics::PlaySoundAtLocation(this, Character->GetMeleeImpactSound(), GetActorLocation());
+		const FTransform SocketTransform = TipSocket->GetSocketTransform(GetMesh());
+		if (Victim->GetBloodParticles())
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Victim->GetBloodParticles(), SocketTransform);
 	}
 }
 
 void AEnemy::OnLeftWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	DoDamage(OtherActor);
+	auto Character = Cast<ANimbleTerminatorCharacter>(OtherActor);
+	if (Character)
+	{
+		DoDamage(Character);
+		SpawnBlood(Character, LeftWeaponSocket);
+	}
 }
 
 void AEnemy::OnRightWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                   UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	DoDamage(OtherActor);
+	auto Character = Cast<ANimbleTerminatorCharacter>(OtherActor);
+	if (Character)
+	{
+		DoDamage(Character);
+		SpawnBlood(Character, RightWeaponSocket);
+	}
 }
 
 void AEnemy::ActivateLeftWeapon()
