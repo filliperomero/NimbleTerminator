@@ -9,6 +9,8 @@
 
 #define TRACE_LENGTH 80'000.f
 
+class USoundCue;
+
 UENUM()
 enum class ECombatState: uint8
 {
@@ -431,6 +433,9 @@ private:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float MaxHealth { 100.f };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USoundCue* MeleeImpactSound;
 	
 public:
 
@@ -463,4 +468,5 @@ public:
 
 	void UnHighlightInventorySlot();
 	FORCEINLINE AWeapon* GetEquippedWeapon() const { return EquippedWeapon; }
+	FORCEINLINE USoundCue* GetMeleeImpactSound() const { return MeleeImpactSound; }
 };
