@@ -602,7 +602,7 @@ void ANimbleTerminatorCharacter::SendBullet()
 					}
 
 					AEnemy* HitEnemy = Cast<AEnemy>(BeamHitResult.GetActor());
-					if (HitEnemy)
+					if (HitEnemy && !HitEnemy->IsDying())
 					{
 						const bool IsHeadShot = BeamHitResult.BoneName.ToString() == HitEnemy->GetHeadBone();
 						const float Damage = IsHeadShot
@@ -613,7 +613,7 @@ void ANimbleTerminatorCharacter::SendBullet()
 
 						HitEnemy->ShowHitNumber(Damage, BeamHitResult.Location, IsHeadShot);
 					}
-				}				
+				}
 			}
 		}
 	}

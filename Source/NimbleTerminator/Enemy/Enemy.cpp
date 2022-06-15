@@ -127,6 +127,8 @@ void AEnemy::BulletHit_Implementation(FHitResult HitResult)
 			);
 	}
 
+	if (bDying) return;
+	
 	ShowHealthBar();
 	const float Stunned = FMath::FRandRange(0.f, 1.f);
 	if (Stunned <= StunChance)
@@ -158,7 +160,35 @@ float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AC
 
 void AEnemy::Die()
 {
+	if (bDying) return;
+
+	bDying = true;
+	
 	HideHealthBar();
+	if (DeathMontage)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance)
+			AnimInstance->Montage_Play(DeathMontage);
+	}
+
+	if (EnemyController && EnemyController->GetBlackboard())
+	{
+		EnemyController->GetBlackboard()->SetValueAsBool(FName("IsDead"), true);
+		EnemyController->StopMovement();
+	}
+}
+
+void AEnemy::FinishDeath()
+{
+	GetMesh()->bPauseAnims = true;
+	
+	GetWorldTimerManager().SetTimer(DeathTimer, this, &ThisClass::DestroyEnemy, DeathTime);
+}
+
+void AEnemy::DestroyEnemy()
+{
+	Destroy();
 }
 
 void AEnemy::PlayHitMontage(FName Section, float PlayRate)

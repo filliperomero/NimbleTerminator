@@ -39,6 +39,13 @@ protected:
 	void HideHealthBar();
 
 	void Die();
+	
+	UFUNCTION(BlueprintCallable)
+	void FinishDeath();
+
+	UFUNCTION()
+	void DestroyEnemy();
+	
 	void PlayHitMontage(FName Section, float PlayRate = 1.f);
 	void ResetHitReactTimer();
 
@@ -246,11 +253,25 @@ private:
 
 	FTimerHandle AttackWaitTimer;
 
+	UPROPERTY()
+	bool bDying { false };
+
+	FTimerHandle DeathTimer;
+
+	// Time after death until destroy
+	UPROPERTY(EditAnywhere, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	float DeathTime { 5.f };
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* DeathMontage;
+
 public:
 	FORCEINLINE FString GetHeadBone() const { return HeadBone; }
 	FORCEINLINE UBehaviorTree* GetBehaviorTree() const { return BehaviorTree; }
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowHitNumber(int32 Damage, FVector HitLocation, bool bHeadShot);
+
+	FORCEINLINE bool IsDying() const { return bDying; }
 
 };
