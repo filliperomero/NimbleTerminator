@@ -3,6 +3,7 @@
 
 #include "NimbleTerminatorCharacter.h"
 
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
@@ -17,6 +18,7 @@
 #include "Components/WidgetComponent.h"
 #include "NimbleTerminator/NimbleTerminator.h"
 #include "NimbleTerminator/Enemy/Enemy.h"
+#include "NimbleTerminator/Enemy/EnemyController.h"
 #include "NimbleTerminator/Interfaces/BulletHitInterface.h"
 #include "NimbleTerminator/Weapon/Ammo.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
@@ -292,6 +294,12 @@ float ANimbleTerminatorCharacter::TakeDamage(float DamageAmount, FDamageEvent co
 	{
 		Health = 0.f;
 		Die();
+		auto EnemyController = Cast<AEnemyController>(EventInstigator);
+		if (EnemyController && EnemyController->GetBlackboard())
+		{
+			EnemyController->GetBlackboard()->SetValueAsBool(FName("IsCharacterDead"), true);
+			EnemyController->GetBlackboard()->SetValueAsObject(FName("Target"), nullptr);
+		}
 	}
 	else
 	{
