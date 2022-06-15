@@ -291,6 +291,7 @@ float ANimbleTerminatorCharacter::TakeDamage(float DamageAmount, FDamageEvent co
 	if (Health - DamageAmount <= 0.f)
 	{
 		Health = 0.f;
+		Die();
 	}
 	else
 	{
@@ -298,6 +299,32 @@ float ANimbleTerminatorCharacter::TakeDamage(float DamageAmount, FDamageEvent co
 	}
 
 	return DamageAmount;
+}
+
+void ANimbleTerminatorCharacter::Die()
+{
+	if (bIsDying) return;
+	
+	bIsDying = true;
+	if (DeathMontage)
+	{
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		
+		if (AnimInstance)
+			AnimInstance->Montage_Play(DeathMontage);
+	}
+}
+
+void ANimbleTerminatorCharacter::FinishDeath()
+{
+	GetMesh()->bPauseAnims = true;
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	if (PlayerController) DisableInput(PlayerController);
+}
+
+bool ANimbleTerminatorCharacter::IsDead() const
+{
+	return Health <= 0.f;
 }
 
 void ANimbleTerminatorCharacter::MoveForward(float Value)
@@ -1069,6 +1096,8 @@ EPhysicalSurface ANimbleTerminatorCharacter::GetSurfaceType()
 
 void ANimbleTerminatorCharacter::Stun()
 {
+	if (IsDead()) return;
+	
 	CombatState = ECombatState::ECS_Stunned;
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
