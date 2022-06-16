@@ -1175,3 +1175,8 @@ void ANimbleTerminatorCharacter::StartEquipSoundTimer()
 	bShouldPlayEquipSound = false;
 	GetWorldTimerManager().SetTimer(EquipSoundTimer, this, &ThisClass::ResetEquipSoundTimer, EquipSoundResetTime);
 }
+
+void ANimbleTerminatorCharacter::Heal(float HealAmount)
+{
+	Health = FMath::Clamp(Health + HealAmount, 0, MaxHealth);
+}

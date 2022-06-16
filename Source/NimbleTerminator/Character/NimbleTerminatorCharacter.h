@@ -499,4 +499,6 @@ public:
 
 	FORCEINLINE float GetChanceToBeStunned() const { return ChanceToBeStunned; }
 	void Stun();
+
+	void Heal(float HealAmount);
 };
