@@ -9,6 +9,7 @@
 
 class UParticleSystem;
 class USoundCue;
+class USphereComponent;
 
 UCLASS()
 class NIMBLETERMINATOR_API AExplosive : public AActor, public IBulletHitInterface
@@ -19,7 +20,7 @@ public:
 	AExplosive();
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void BulletHit_Implementation(FHitResult HitResult) override;
+	virtual void BulletHit_Implementation(FHitResult HitResult, AActor* Shooter, AController* ShooterController) override;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -30,6 +31,19 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
 	USoundCue* ImpactSound;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* ExplosiveMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Combat, meta = (AllowPrivateAccess = "true"))
+	USphereComponent* ExplosionRadiusSphere;
+
+	/**
+	 * Stats
+	 */
+
+	UPROPERTY(EditAnywhere, Category = Stats)
+	float BaseDamage { 85.f };
 
 public:	
 	

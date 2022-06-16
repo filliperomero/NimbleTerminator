@@ -619,7 +619,7 @@ void ANimbleTerminatorCharacter::SendBullet()
 					IBulletHitInterface* BulletHitInterface = Cast<IBulletHitInterface>(BeamHitResult.GetActor());
 					if (BulletHitInterface)
 					{
-						BulletHitInterface->BulletHit_Implementation(BeamHitResult);
+						BulletHitInterface->BulletHit_Implementation(BeamHitResult, this, GetController());
 					}
 					else
 					{
