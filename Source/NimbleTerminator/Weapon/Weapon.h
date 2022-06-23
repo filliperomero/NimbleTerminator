@@ -89,7 +89,7 @@ struct FWeaponDataTable : public FTableRowBase
 	FName BoneToHide;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Damage;
+	float BaseDamage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float HeadShotDamage;

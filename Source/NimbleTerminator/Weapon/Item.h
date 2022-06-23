@@ -62,6 +62,9 @@ struct FItemRarityTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture2D* IconBackground;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DamageMultiplier;
 };
 
 UCLASS()
@@ -248,6 +251,9 @@ private:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Rarity, meta = (AllowPrivateAccess = "true"))
     UTexture2D* IconBackground;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Rarity, meta = (AllowPrivateAccess = "true"))
+	float DamageMultiplier { 1.f };
+
 public:	
 	FORCEINLINE UWidgetComponent* GetPickupWidget() const { return PickupWidget; }
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
@@ -284,4 +290,5 @@ public:
 	FORCEINLINE FLinearColor GetGlowColor() const { return GlowColor; }
 	FORCEINLINE int32 GetMaterialIndex() const { return MaterialIndex; }
 	FORCEINLINE void SetMaterialIndex(const int32 Index) { MaterialIndex = Index; }
+	FORCEINLINE float GetDamageMultiplier() const { return DamageMultiplier; }
 };

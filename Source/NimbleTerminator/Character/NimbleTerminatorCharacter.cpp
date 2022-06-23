@@ -640,9 +640,10 @@ void ANimbleTerminatorCharacter::SendBullet()
 					if (HitEnemy && !HitEnemy->IsDying())
 					{
 						const bool IsHeadShot = BeamHitResult.BoneName.ToString() == HitEnemy->GetHeadBone();
+						const float DamageMultiplier = EquippedWeapon->GetDamageMultiplier();
 						const float Damage = IsHeadShot
-							? EquippedWeapon->GetHeadShotDamage()
-							: EquippedWeapon->GetDamage();
+							? EquippedWeapon->GetHeadShotDamage() * DamageMultiplier
+							: EquippedWeapon->GetDamage() * DamageMultiplier;
 						
 						UGameplayStatics::ApplyDamage(BeamHitResult.GetActor(), Damage, GetController(), this, UDamageType::StaticClass());
 
